@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+  name     String
+}
+
+model Property {
+  id          Int          @id @default(autoincrement())
+  address     String
+  owner_name  String
+  units_count Int
+  inspections Inspection[]
+}
+
+model Inspection {
+  id              Int                @id @default(autoincrement())
+  property_id     Int
+  property        Property           @relation(fields: [property_id], references: [id])
+  date            DateTime           @default(now())
+  ended_at        DateTime?          // When inspection was completed
+  status          String             @default("DRAFT") // DRAFT, COMPLETED
+  inspector_name  String
+  results         InspectionResult[]
+}
+
+model ChecklistCategory {
+  id    Int             @id @default(autoincrement())
+  name  String
+  items ChecklistItem[]
+}
+
+model ChecklistItem {
+  id          Int               @id @default(autoincrement())
+  category_id Int
+  category    ChecklistCategory @relation(fields: [category_id], references: [id])
+  text        String
+  results     InspectionResult[]
+}
+
+model InspectionResult {
+  id                Int           @id @default(autoincrement())
+  inspection_id     Int
+  inspection        Inspection    @relation(fields: [inspection_id], references: [id])
+  checklist_item_id Int
+  checklist_item    ChecklistItem @relation(fields: [checklist_item_id], references: [id])
+  status            String        // OK, DEFECT, NOT_APPLICABLE
+  comment           String?
+  photo_url         String?
+}
