@@ -221,6 +221,67 @@ describe('Properties', () => {
       .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(400);
   });
+
+  it('PUT /api/properties/:id should update a property', async () => {
+    const res = await request(app)
+      .put(`/api/properties/${testPropertyId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ address: 'Updated Str 1, 1010 Wien' });
+    expect(res.status).toBe(200);
+    expect(res.body.address).toBe('Updated Str 1, 1010 Wien');
+  });
+
+  it('PUT /api/properties/:id should return 404 for nonexistent', async () => {
+    const res = await request(app)
+      .put('/api/properties/99999')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ address: 'Test' });
+    expect(res.status).toBe(404);
+  });
+
+  it('PUT /api/properties/:id should reject empty body', async () => {
+    const res = await request(app)
+      .put(`/api/properties/${testPropertyId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({});
+    expect(res.status).toBe(400);
+  });
+
+  it('PUT /api/properties/:id should be denied for readonly users', async () => {
+    const res = await request(app)
+      .put(`/api/properties/${testPropertyId}`)
+      .set('Authorization', `Bearer ${readonlyToken}`)
+      .send({ address: 'Denied' });
+    expect(res.status).toBe(403);
+  });
+
+  it('DELETE /api/properties/:id should delete a property without drafts', async () => {
+    // Create a property with no inspections
+    const propRes = await request(app)
+      .post('/api/properties')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ address: 'Delete-Me-Str 1', owner_name: 'Delete GmbH', units_count: 1 });
+    const deleteId = propRes.body.id;
+
+    const res = await request(app)
+      .delete(`/api/properties/${deleteId}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.message).toBe('Property deleted');
+
+    // Verify it's gone
+    const getRes = await request(app)
+      .get(`/api/properties/${deleteId}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(getRes.status).toBe(404);
+  });
+
+  it('DELETE /api/properties/:id should be denied for non-admin', async () => {
+    const res = await request(app)
+      .delete(`/api/properties/${testPropertyId}`)
+      .set('Authorization', `Bearer ${readonlyToken}`);
+    expect(res.status).toBe(403);
+  });
 });
 
 describe('Draft Inspections', () => {
