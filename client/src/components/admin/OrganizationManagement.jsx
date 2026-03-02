@@ -120,7 +120,7 @@ export default function OrganizationManagement() {
         return (
             <AdminLayout>
                 <div className="flex justify-center py-12">
-                    <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full" />
                 </div>
             </AdminLayout>
         );
@@ -129,10 +129,10 @@ export default function OrganizationManagement() {
     return (
         <AdminLayout>
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Organisationen</h2>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Organisationen</h2>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+                    className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 text-sm font-medium active:scale-[0.98] transition-all"
                 >
                     <Plus size={16} />
                     Neue Organisation
@@ -140,7 +140,7 @@ export default function OrganizationManagement() {
             </div>
 
             {organizations.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <Building2 size={48} className="mx-auto mb-4 opacity-30" />
                     <p>Noch keine Organisationen vorhanden.</p>
                 </div>
@@ -149,26 +149,26 @@ export default function OrganizationManagement() {
                     {organizations.map(org => {
                         const orgUsers = getOrgUsers(org.id);
                         return (
-                            <div key={org.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                            <div key={org.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">{org.name}</h3>
-                                        <p className="text-sm text-gray-500">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{org.name}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
                                             {org._count?.users || 0} Benutzer, {org._count?.properties || 0} Objekte
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => setAssignModal(assignModal === org.id ? null : org.id)}
-                                            className="text-gray-400 hover:text-blue-600 p-1"
+                                            className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1"
                                             title="Benutzer zuweisen"
                                         >
                                             <UserPlus size={18} />
                                         </button>
-                                        <button onClick={() => openEdit(org)} className="text-gray-400 hover:text-blue-600 p-1" title="Bearbeiten">
+                                        <button onClick={() => openEdit(org)} className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1" title="Bearbeiten">
                                             <Pencil size={18} />
                                         </button>
-                                        <button onClick={() => setDeleteConfirm(org.id)} className="text-gray-400 hover:text-red-600 p-1" title="Löschen">
+                                        <button onClick={() => setDeleteConfirm(org.id)} className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 p-1" title="Löschen">
                                             <Trash2 size={18} />
                                         </button>
                                     </div>
@@ -176,17 +176,17 @@ export default function OrganizationManagement() {
 
                                 {/* Assigned Users */}
                                 {orgUsers.length > 0 && (
-                                    <div className="mt-3 border-t border-gray-100 pt-3">
-                                        <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">
+                                    <div className="mt-3 border-t border-gray-100 dark:border-gray-800 pt-3">
+                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
                                             <Users size={12} /> Zugewiesene Benutzer
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             {orgUsers.map(u => (
-                                                <span key={u.id} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-sm px-3 py-1 rounded-full">
+                                                <span key={u.id} className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm px-3 py-1 rounded-full">
                                                     {u.name}
                                                     <button
                                                         onClick={() => handleRemoveUser(org.id, u.id)}
-                                                        className="hover:text-red-500 ml-1"
+                                                        className="hover:text-red-500 dark:hover:text-red-400 ml-1"
                                                     >
                                                         <UserMinus size={14} />
                                                     </button>
@@ -198,17 +198,17 @@ export default function OrganizationManagement() {
 
                                 {/* Assign User Panel */}
                                 {assignModal === org.id && (
-                                    <div className="mt-3 border-t border-gray-100 pt-3">
-                                        <p className="text-xs font-medium text-gray-500 mb-2">Benutzer zuweisen:</p>
+                                    <div className="mt-3 border-t border-gray-100 dark:border-gray-800 pt-3">
+                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Benutzer zuweisen:</p>
                                         {getUnassignedUsers().length === 0 ? (
-                                            <p className="text-sm text-gray-400">Alle Benutzer sind bereits zugewiesen.</p>
+                                            <p className="text-sm text-gray-400 dark:text-gray-500">Alle Benutzer sind bereits zugewiesen.</p>
                                         ) : (
                                             <div className="flex flex-wrap gap-2">
                                                 {getUnassignedUsers().map(u => (
                                                     <button
                                                         key={u.id}
                                                         onClick={() => handleAssignUser(org.id, u.id)}
-                                                        className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-full hover:bg-blue-100 hover:text-blue-700 transition"
+                                                        className="text-sm bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-400 transition"
                                                     >
                                                         + {u.name}
                                                     </button>
@@ -225,26 +225,26 @@ export default function OrganizationManagement() {
 
             {/* Create/Edit Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-gray-900">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                 {editingOrg ? 'Organisation bearbeiten' : 'Neue Organisation'}
                             </h3>
-                            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>}
+                        {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-sm">{error}</div>}
 
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
                                 <input
                                     type="text"
                                     required
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     placeholder="z.B. Hausverwaltung Müller GmbH"
@@ -254,14 +254,14 @@ export default function OrganizationManagement() {
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                                    className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all"
                                 >
                                     Abbrechen
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex-1 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-400"
+                                    className="flex-1 py-3 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 active:scale-[0.98] transition-all"
                                 >
                                     {saving ? 'Speichern...' : 'Speichern'}
                                 </button>
@@ -273,23 +273,23 @@ export default function OrganizationManagement() {
 
             {/* Delete Confirmation */}
             {deleteConfirm && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Organisation löschen?</h3>
-                        <p className="text-gray-600 mb-6">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Organisation löschen?</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
                             Benutzer und Objekte werden von der Organisation getrennt, aber nicht gelöscht.
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeleteConfirm(null)}
-                                className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all"
                             >
                                 Abbrechen
                             </button>
                             <button
                                 onClick={() => handleDelete(deleteConfirm)}
                                 disabled={deleting}
-                                className="flex-1 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-gray-400"
+                                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-gray-400 active:scale-[0.98] transition-all"
                             >
                                 {deleting ? 'Löschen...' : 'Löschen'}
                             </button>
