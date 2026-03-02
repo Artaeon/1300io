@@ -317,7 +317,8 @@ app.delete('/api/properties/:id', authenticateToken, authorizeRoles('ADMIN'), va
     return res.status(409).json({ error: 'Cannot delete property with active draft inspections' });
   }
 
-  // Cascade delete: results -> inspections -> property
+  // Cascade delete: defects -> results -> inspections -> property
+  await prisma.defectTracking.deleteMany({ where: { property_id: req.validatedParams.id } });
   await prisma.inspectionResult.deleteMany({
     where: { inspection: { property_id: req.validatedParams.id } }
   });
@@ -335,6 +336,25 @@ app.get('/api/properties/:id/draft-inspection', authenticateToken, validateParam
     orderBy: { createdAt: 'desc' },
   });
   res.json(draft);
+}));
+
+// --- Defect Tracking ---
+
+app.get('/api/properties/:id/defects', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
+  if (!property) return res.status(404).json({ error: 'Property not found' });
+
+  const defects = await prisma.defectTracking.findMany({
+    where: { property_id: req.validatedParams.id },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      checklist_item: { include: { category: true } },
+      first_found_result: { include: { inspection: { select: { id: true, date: true, inspector_name: true } } } },
+      resolved_result: { include: { inspection: { select: { id: true, date: true, inspector_name: true } } } }
+    }
+  });
+
+  res.json(defects);
 }));
 
 // --- Inspections ---
@@ -399,7 +419,7 @@ app.get('/api/inspections/:id/results', authenticateToken, validateParams(idPara
   res.json(results);
 }));
 
-// Save single result
+// Save single result (with defect tracking)
 app.post('/api/inspections/:id/results', authenticateToken, authorizeRoles('ADMIN', 'MANAGER', 'INSPECTOR'), validateParams(idParamSchema), validateBody(inspectionResultSchema), asyncHandler(async (req, res) => {
   const inspectionId = req.validatedParams.id;
   const { checklistItemId, status, comment, photoUrl } = req.validatedBody;
@@ -413,26 +433,67 @@ app.post('/api/inspections/:id/results', authenticateToken, authorizeRoles('ADMI
     where: { inspection_id: inspectionId, checklist_item_id: checklistItemId }
   });
 
+  let result;
+  let isNew = false;
+
   if (existingResult) {
-    const result = await prisma.inspectionResult.update({
+    result = await prisma.inspectionResult.update({
       where: { id: existingResult.id },
       data: { status, comment: comment || null, photo_url: photoUrl || null }
     });
     await createAuditEntry({ action: 'UPDATE', entityType: 'InspectionResult', entityId: result.id, ...getAuditContext(req), previousData: existingResult, newData: result });
-    return res.json(result);
+  } else {
+    result = await prisma.inspectionResult.create({
+      data: {
+        inspection_id: inspectionId,
+        checklist_item_id: checklistItemId,
+        status,
+        comment: comment || null,
+        photo_url: photoUrl || null
+      }
+    });
+    await createAuditEntry({ action: 'CREATE', entityType: 'InspectionResult', entityId: result.id, ...getAuditContext(req), newData: result });
+    isNew = true;
   }
 
-  const result = await prisma.inspectionResult.create({
-    data: {
-      inspection_id: inspectionId,
-      checklist_item_id: checklistItemId,
-      status,
-      comment: comment || null,
-      photo_url: photoUrl || null
+  // --- Defect Tracking ---
+  if (status === 'DEFECT') {
+    // Auto-create DefectTracking if no OPEN defect exists for this property+item
+    const existingDefect = await prisma.defectTracking.findFirst({
+      where: {
+        property_id: inspection.property_id,
+        checklist_item_id: checklistItemId,
+        status: 'OPEN'
+      }
+    });
+    if (!existingDefect) {
+      await prisma.defectTracking.create({
+        data: {
+          property_id: inspection.property_id,
+          checklist_item_id: checklistItemId,
+          first_found_result_id: result.id,
+          status: 'OPEN'
+        }
+      });
     }
-  });
-  await createAuditEntry({ action: 'CREATE', entityType: 'InspectionResult', entityId: result.id, ...getAuditContext(req), newData: result });
-  res.status(201).json(result);
+  } else if (status === 'OK') {
+    // Auto-resolve any OPEN defect for this property+item
+    const openDefect = await prisma.defectTracking.findFirst({
+      where: {
+        property_id: inspection.property_id,
+        checklist_item_id: checklistItemId,
+        status: 'OPEN'
+      }
+    });
+    if (openDefect) {
+      await prisma.defectTracking.update({
+        where: { id: openDefect.id },
+        data: { status: 'RESOLVED', resolved_result_id: result.id }
+      });
+    }
+  }
+
+  res.status(isNew ? 201 : 200).json(result);
 }));
 
 // Validate inspection completeness
