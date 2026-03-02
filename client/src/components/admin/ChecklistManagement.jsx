@@ -151,12 +151,12 @@ export default function ChecklistManagement() {
     return (
         <AdminLayout>
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                     Checkliste ({categories.length} Kategorien, {categories.reduce((sum, c) => sum + (c.items?.length || 0), 0)} Prüfpunkte)
                 </h2>
                 <button
                     onClick={openCreateCategory}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm"
+                    className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 font-medium text-sm active:scale-[0.98] transition-all"
                 >
                     <Plus size={16} /> Kategorie
                 </button>
@@ -164,30 +164,30 @@ export default function ChecklistManagement() {
 
             {loading ? (
                 <div className="flex justify-center py-12">
-                    <Loader2 size={32} className="animate-spin text-blue-600" />
+                    <Loader2 size={32} className="animate-spin text-blue-600 dark:text-blue-400" />
                 </div>
             ) : (
                 <div className="space-y-3">
                     {categories.map(cat => (
-                        <div key={cat.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div key={cat.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
                             {/* Category Header */}
-                            <div className="flex items-center px-4 py-3 bg-gray-50 border-b">
-                                <button onClick={() => toggleExpand(cat.id)} className="text-gray-500 mr-2">
+                            <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                                <button onClick={() => toggleExpand(cat.id)} className="text-gray-500 dark:text-gray-400 mr-2">
                                     {expanded[cat.id] ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
                                 </button>
-                                <span className="font-semibold text-gray-900 flex-1">{cat.name}</span>
-                                <span className="text-xs text-gray-400 mr-3">{cat.items?.length || 0} Punkte</span>
+                                <span className="font-semibold text-gray-900 dark:text-gray-100 flex-1">{cat.name}</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500 mr-3">{cat.items?.length || 0} Punkte</span>
                                 <div className="flex items-center gap-1">
-                                    <button onClick={() => moveCategoryOrder(cat, -1)} className="text-gray-400 hover:text-gray-600 p-1" title="Nach oben">
+                                    <button onClick={() => moveCategoryOrder(cat, -1)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1" title="Nach oben">
                                         <ArrowUp size={14} />
                                     </button>
-                                    <button onClick={() => moveCategoryOrder(cat, 1)} className="text-gray-400 hover:text-gray-600 p-1" title="Nach unten">
+                                    <button onClick={() => moveCategoryOrder(cat, 1)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1" title="Nach unten">
                                         <ArrowDown size={14} />
                                     </button>
-                                    <button onClick={() => openEditCategory(cat)} className="text-gray-400 hover:text-blue-600 p-1">
+                                    <button onClick={() => openEditCategory(cat)} className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1">
                                         <Pencil size={14} />
                                     </button>
-                                    <button onClick={() => deleteCategory(cat.id)} className="text-gray-400 hover:text-red-600 p-1">
+                                    <button onClick={() => deleteCategory(cat.id)} className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 p-1">
                                         <Trash2 size={14} />
                                     </button>
                                 </div>
@@ -195,21 +195,21 @@ export default function ChecklistManagement() {
 
                             {/* Items */}
                             {expanded[cat.id] && (
-                                <div className="divide-y divide-gray-50">
+                                <div className="divide-y divide-gray-50 dark:divide-gray-800">
                                     {cat.items?.map(item => (
-                                        <div key={item.id} className="flex items-center px-4 py-2.5 hover:bg-gray-50 group">
-                                            <span className="text-sm text-gray-700 flex-1">{item.text}</span>
+                                        <div key={item.id} className="flex items-center px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 group">
+                                            <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{item.text}</span>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => moveItemOrder(item, -1)} className="text-gray-400 hover:text-gray-600 p-1">
+                                                <button onClick={() => moveItemOrder(item, -1)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1">
                                                     <ArrowUp size={12} />
                                                 </button>
-                                                <button onClick={() => moveItemOrder(item, 1)} className="text-gray-400 hover:text-gray-600 p-1">
+                                                <button onClick={() => moveItemOrder(item, 1)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 p-1">
                                                     <ArrowDown size={12} />
                                                 </button>
-                                                <button onClick={() => openEditItem(item)} className="text-gray-400 hover:text-blue-600 p-1">
+                                                <button onClick={() => openEditItem(item)} className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1">
                                                     <Pencil size={12} />
                                                 </button>
-                                                <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-600 p-1">
+                                                <button onClick={() => deleteItem(item.id)} className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 p-1">
                                                     <Trash2 size={12} />
                                                 </button>
                                             </div>
@@ -217,7 +217,7 @@ export default function ChecklistManagement() {
                                     ))}
                                     <button
                                         onClick={() => openCreateItem(cat.id)}
-                                        className="w-full px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2 font-medium"
+                                        className="w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2 font-medium"
                                     >
                                         <Plus size={14} /> Prüfpunkt hinzufügen
                                     </button>
@@ -230,35 +230,35 @@ export default function ChecklistManagement() {
 
             {/* Create/Edit Modal */}
             {modal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-gray-900">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                                 {modal.mode === 'create' ? 'Neu erstellen' : 'Bearbeiten'}
                             </h3>
-                            <button onClick={() => setModal(null)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setModal(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>}
+                        {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-sm">{error}</div>}
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                                     {modal.type === 'category' ? 'Kategoriename' : 'Prüfpunkt'}
                                 </label>
                                 {modal.type === 'category' ? (
                                     <input
                                         type="text" required
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                         value={form.name || ''}
                                         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                                     />
                                 ) : (
                                     <textarea
                                         required rows={3}
-                                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                         value={form.text || ''}
                                         onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
                                     />
@@ -266,11 +266,11 @@ export default function ChecklistManagement() {
                             </div>
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={() => setModal(null)}
-                                    className="flex-1 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">
+                                    className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all">
                                     Abbrechen
                                 </button>
                                 <button type="submit" disabled={saving}
-                                    className="flex-1 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:bg-gray-400">
+                                    className="flex-1 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 active:scale-[0.98] transition-all">
                                     {saving ? 'Speichern...' : 'Speichern'}
                                 </button>
                             </div>
