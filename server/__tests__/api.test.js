@@ -223,6 +223,74 @@ describe('Properties', () => {
   });
 });
 
+describe('Draft Inspections', () => {
+  it('GET /api/properties/:id/draft-inspection should return null when no draft', async () => {
+    // Create a property with no inspections
+    const propRes = await request(app)
+      .post('/api/properties')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ address: 'No-Draft-Str 1', owner_name: 'Test', units_count: 1 });
+    const res = await request(app)
+      .get(`/api/properties/${propRes.body.id}/draft-inspection`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toBeNull();
+  });
+
+  it('GET /api/properties/:id/draft-inspection should return latest draft', async () => {
+    // Create a draft inspection for testPropertyId (created in Properties tests)
+    await request(app)
+      .post('/api/inspections')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ propertyId: testPropertyId, inspectorName: 'Draft Tester' });
+
+    const res = await request(app)
+      .get(`/api/properties/${testPropertyId}/draft-inspection`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toBeTruthy();
+    expect(res.body.status).toBe('DRAFT');
+    expect(res.body.property_id).toBe(testPropertyId);
+  });
+
+  it('GET /api/inspections/:id/results should return saved results', async () => {
+    // First create an inspection and save a result
+    const inspRes = await request(app)
+      .post('/api/inspections')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ propertyId: testPropertyId, inspectorName: 'Results Tester' });
+    const inspId = inspRes.body.id;
+
+    // Need a checklist item id
+    const catRes = await request(app)
+      .get('/api/checklist/categories')
+      .set('Authorization', `Bearer ${authToken}`);
+    const firstItemId = catRes.body[0].items[0].id;
+
+    // Save a result
+    await request(app)
+      .post(`/api/inspections/${inspId}/results`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ checklistItemId: firstItemId, status: 'OK' });
+
+    // Fetch results
+    const res = await request(app)
+      .get(`/api/inspections/${inspId}/results`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].status).toBe('OK');
+  });
+
+  it('GET /api/inspections/:id/results should return 404 for nonexistent', async () => {
+    const res = await request(app)
+      .get('/api/inspections/99999/results')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(404);
+  });
+});
+
 describe('Inspections', () => {
   it('POST /api/inspections should create an inspection', async () => {
     const res = await request(app)
