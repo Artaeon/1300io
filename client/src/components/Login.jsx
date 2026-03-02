@@ -22,42 +22,42 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-100">
+        <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
             <div className="flex-1 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full">
+                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-sm w-full">
                     <div className="flex justify-center mb-6">
-                        <div className="bg-blue-100 p-4 rounded-full">
-                            <Lock size={40} className="text-blue-600" />
+                        <div className="bg-blue-100 dark:bg-blue-900/40 p-4 rounded-full">
+                            <Lock size={40} className="text-blue-600 dark:text-blue-400" />
                         </div>
                     </div>
-                    <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">Anmelden</h1>
+                    <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Anmelden</h1>
 
-                    {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-center">{error}</div>}
+                    {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-center">{error}</div>}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</label>
                             <input
                                 type="email"
                                 required
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Passwort</label>
+                            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Passwort</label>
                             <input
                                 type="password"
                                 required
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition"
+                            className="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all"
                         >
                             Einloggen
                         </button>
