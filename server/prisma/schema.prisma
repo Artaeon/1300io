@@ -42,10 +42,11 @@ model Inspection {
 }
 
 model ChecklistCategory {
-  id        Int             @id @default(autoincrement())
-  name      String
-  items     ChecklistItem[]
-  createdAt DateTime        @default(now())
+  id         Int             @id @default(autoincrement())
+  name       String
+  sort_order Int             @default(0)
+  items      ChecklistItem[]
+  createdAt  DateTime        @default(now())
 }
 
 model ChecklistItem {
@@ -53,6 +54,7 @@ model ChecklistItem {
   category_id Int
   category    ChecklistCategory @relation(fields: [category_id], references: [id])
   text        String
+  sort_order  Int               @default(0)
   results     InspectionResult[]
   createdAt   DateTime          @default(now())
 }

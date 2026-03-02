@@ -347,7 +347,8 @@ app.post('/api/inspections/:id/complete', authenticateToken, authorizeRoles('ADM
 
 app.get('/api/checklist/categories', authenticateToken, asyncHandler(async (req, res) => {
   const categories = await prisma.checklistCategory.findMany({
-    include: { items: true }
+    orderBy: { sort_order: 'asc' },
+    include: { items: { orderBy: { sort_order: 'asc' } } }
   });
   res.json(categories);
 }));
