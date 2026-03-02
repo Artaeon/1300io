@@ -33,7 +33,7 @@ function App() {
     <ThemeProvider>
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+        <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/impressum" element={<Impressum />} />
