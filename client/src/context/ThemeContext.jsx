@@ -19,7 +19,13 @@ export function ThemeProvider({ children }) {
         localStorage.setItem('theme', dark ? 'dark' : 'light');
     }, [dark]);
 
-    const toggleTheme = () => setDark(prev => !prev);
+    const toggleTheme = () => {
+        document.documentElement.classList.add('transitioning');
+        setDark(prev => !prev);
+        setTimeout(() => {
+            document.documentElement.classList.remove('transitioning');
+        }, 350);
+    };
 
     return (
         <ThemeContext.Provider value={{ dark, toggleTheme }}>
