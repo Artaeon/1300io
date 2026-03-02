@@ -25,6 +25,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_URL=http://localhost:3000
+      - VITE_API_TARGET=http://server:3000
     depends_on:
       - server
     command: npm run dev
