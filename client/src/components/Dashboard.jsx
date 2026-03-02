@@ -17,7 +17,7 @@ const isInspectionValid = (endedAt) => {
 const InspectionStatusBadge = ({ lastInspection }) => {
     if (!lastInspection || !lastInspection.ended_at) {
         return (
-            <div className="flex items-center gap-1.5 text-red-600 bg-red-50 px-3 py-1.5 rounded-full text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-full text-sm font-medium">
                 <AlertCircle size={14} />
                 <span>Prüfung fällig!</span>
             </div>
@@ -29,7 +29,7 @@ const InspectionStatusBadge = ({ lastInspection }) => {
 
     if (isValid) {
         return (
-            <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-3 py-1.5 rounded-full text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-full text-sm font-medium">
                 <CheckCircle2 size={14} />
                 <span>Geprüft: {dateStr}</span>
             </div>
@@ -37,7 +37,7 @@ const InspectionStatusBadge = ({ lastInspection }) => {
     }
 
     return (
-        <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-3 py-1.5 rounded-full text-sm font-medium">
+        <div className="flex items-center gap-1.5 text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-full text-sm font-medium">
             <AlertCircle size={14} />
             <span>Abgelaufen ({dateStr})</span>
         </div>
@@ -155,28 +155,28 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+            <div className="flex items-center justify-center min-h-screen bg-gray-100/50 dark:bg-gray-950">
+                <div className="animate-spin w-8 h-8 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
+        <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 pb-24">
             {/* Header */}
-            <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">PropSecure</h1>
-                    <div className="flex items-center gap-2">
-                        <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400 hover:text-blue-600 p-2" title={dark ? 'Hellmodus' : 'Dunkelmodus'}>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">PropSecure</h1>
+                    <div className="flex items-center gap-1">
+                        <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-xl active:scale-95 transition-all" title={dark ? 'Hellmodus' : 'Dunkelmodus'}>
                             {dark ? <Sun size={22} /> : <Moon size={22} />}
                         </button>
                         {user?.role === 'ADMIN' && (
-                            <Link to="/admin/users" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 p-2" title="Verwaltung">
+                            <Link to="/admin/users" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-xl active:scale-95 transition-all" title="Verwaltung">
                                 <Settings size={22} />
                             </Link>
                         )}
-                        <button onClick={logout} className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-2">
+                        <button onClick={logout} className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-2 rounded-xl active:scale-95 transition-all">
                             <LogOut size={22} />
                         </button>
                     </div>
@@ -189,40 +189,40 @@ export default function Dashboard() {
                 {history.length > 0 && (
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <Clock size={20} className="text-gray-500" />
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Aktuelle Prüfungen</h2>
+                            <Clock size={20} className="text-gray-400 dark:text-gray-500" />
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Aktuelle Prüfungen</h2>
                         </div>
 
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
+                                    <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
                                         <tr>
-                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Datum</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Objekt</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Prüfer</th>
-                                            <th className="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">PDF</th>
+                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Datum</th>
+                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Objekt</th>
+                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400 hidden sm:table-cell">Prüfer</th>
+                                            <th className="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">PDF</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                                         {history.map(insp => (
-                                            <tr key={insp.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 whitespace-nowrap">
+                                            <tr key={insp.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                                <td className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-400">
                                                     {insp.ended_at
                                                         ? new Date(insp.ended_at).toLocaleDateString('de-AT')
                                                         : '—'
                                                     }
                                                 </td>
                                                 <td className="px-4 py-3">
-                                                    <span className="font-medium text-gray-900">{insp.property?.address || 'Unbekannt'}</span>
+                                                    <span className="font-medium text-gray-900 dark:text-gray-100">{insp.property?.address || 'Unbekannt'}</span>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">
+                                                <td className="px-4 py-3 text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                                                     {insp.inspector_name}
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
                                                     <button
                                                         onClick={() => handleDownloadPDF(insp.id)}
-                                                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium"
+                                                        className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                                                     >
                                                         <Download size={16} />
                                                         <span className="hidden sm:inline">PDF</span>
@@ -240,18 +240,18 @@ export default function Dashboard() {
                 {/* SECTION 2: Properties List */}
                 <section>
                     <div className="flex items-center gap-2 mb-4">
-                        <Building size={20} className="text-gray-500" />
-                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Meine Objekte</h2>
-                        <span className="text-sm text-gray-500">({totalProperties})</span>
+                        <Building size={20} className="text-gray-400 dark:text-gray-500" />
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Meine Objekte</h2>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">({totalProperties})</span>
                     </div>
 
                     {/* Search */}
                     <div className="relative mb-4">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                         <input
                             type="text"
                             placeholder="Objekte suchen..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 dark:text-white"
+                            className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
                         />
@@ -259,7 +259,7 @@ export default function Dashboard() {
 
                     <div className="space-y-4">
                         {properties.map(prop => (
-                            <div key={prop.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
+                            <div key={prop.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
                                 <div className="p-5">
                                     {/* Status Badge & Actions */}
                                     <div className="flex justify-between items-start mb-3">
@@ -268,7 +268,7 @@ export default function Dashboard() {
                                             {prop.lastInspection && (
                                                 <button
                                                     onClick={() => handleDownloadPDF(prop.lastInspection.id)}
-                                                    className="text-gray-400 hover:text-blue-600 p-1"
+                                                    className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1"
                                                     title="Letzten Bericht herunterladen"
                                                 >
                                                     <FileText size={18} />
@@ -276,14 +276,14 @@ export default function Dashboard() {
                                             )}
                                             <Link
                                                 to={`/properties/${prop.id}/edit`}
-                                                className="text-gray-400 hover:text-blue-600 p-1"
+                                                className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1"
                                                 title="Bearbeiten"
                                             >
                                                 <Pencil size={18} />
                                             </Link>
                                             <button
                                                 onClick={() => setDeleteConfirm(prop.id)}
-                                                className="text-gray-400 hover:text-red-600 p-1"
+                                                className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 p-1"
                                                 title="Löschen"
                                             >
                                                 <Trash2 size={18} />
@@ -293,9 +293,9 @@ export default function Dashboard() {
 
                                     {/* Property Info */}
                                     <Link to={`/properties/${prop.id}`} className="block">
-                                        <h3 className="text-lg font-bold text-gray-900 mb-1 hover:text-blue-600 transition-colors">{prop.address}</h3>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{prop.address}</h3>
                                     </Link>
-                                    <div className="flex items-center text-gray-500 text-sm mb-4">
+                                    <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mb-4">
                                         <MapPin size={14} className="mr-1" />
                                         <span>{prop.units_count} Einheiten • {prop.owner_name}</span>
                                     </div>
@@ -303,7 +303,7 @@ export default function Dashboard() {
                                     {/* Action Button */}
                                     <Link
                                         to={`/inspection/new/${prop.id}`}
-                                        className="block w-full bg-blue-600 active:bg-blue-700 text-white text-center font-bold py-3 rounded-lg shadow hover:shadow-lg transition-all"
+                                        className="block w-full bg-blue-600 dark:bg-blue-500 text-white text-center font-bold py-3 rounded-xl shadow hover:shadow-lg active:scale-[0.98] transition-all"
                                     >
                                         Neue Prüfung starten
                                     </Link>
@@ -312,14 +312,14 @@ export default function Dashboard() {
                         ))}
 
                         {properties.length === 0 && (
-                            <div className="text-center py-12 text-gray-500">
+                            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                                 <Building size={48} className="mx-auto mb-4 opacity-30" />
                                 {search ? (
                                     <p>Keine Objekte gefunden für &ldquo;{search}&rdquo;</p>
                                 ) : (
                                     <>
                                         <p>Noch keine Objekte vorhanden.</p>
-                                        <Link to="/properties/new" className="text-blue-600 font-medium mt-2 inline-block">
+                                        <Link to="/properties/new" className="text-blue-600 dark:text-blue-400 font-medium mt-2 inline-block">
                                             + Erstes Objekt hinzufügen
                                         </Link>
                                     </>
@@ -334,17 +334,17 @@ export default function Dashboard() {
                             <button
                                 onClick={() => handlePageChange(page - 1)}
                                 disabled={page <= 1}
-                                className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
                             >
                                 <ChevronLeft size={18} />
                             </button>
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
                                 Seite {page} von {totalPages}
                             </span>
                             <button
                                 onClick={() => handlePageChange(page + 1)}
                                 disabled={page >= totalPages}
-                                className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
                             >
                                 <ChevronRight size={18} />
                             </button>
@@ -355,23 +355,23 @@ export default function Dashboard() {
 
             {/* Delete Confirmation Dialog */}
             {deleteConfirm && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Objekt löschen?</h3>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Objekt löschen?</h3>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
                             Diese Aktion löscht das Objekt und alle zugehörigen Prüfungen unwiderruflich.
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeleteConfirm(null)}
-                                className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all"
                             >
                                 Abbrechen
                             </button>
                             <button
                                 onClick={() => handleDeleteProperty(deleteConfirm)}
                                 disabled={deleting}
-                                className="flex-1 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-gray-400"
+                                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-gray-400 active:scale-[0.98] transition-all"
                             >
                                 {deleting ? 'Löschen...' : 'Löschen'}
                             </button>
@@ -383,7 +383,7 @@ export default function Dashboard() {
             {/* FAB - Add Property */}
             <Link
                 to="/properties/new"
-                className="fixed bottom-20 right-6 bg-gray-900 text-white p-4 rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 transition-transform active:scale-95"
+                className="fixed bottom-20 right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-100 transition-transform active:scale-95"
             >
                 <Plus size={28} />
             </Link>
