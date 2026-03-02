@@ -12,6 +12,7 @@ const PDFDocument = require('pdfkit');
 const logger = require('./logger');
 const { config, validateConfig, isProduction } = require('./config');
 const { asyncHandler, errorHandler } = require('./middleware/errorHandler');
+const { createAuditEntry, getAuditContext } = require('./audit');
 const {
   createPropertySchema,
   createInspectionSchema,
@@ -191,6 +192,7 @@ app.post('/api/properties', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'
   const property = await prisma.property.create({
     data: { address, owner_name, units_count }
   });
+  await createAuditEntry({ action: 'CREATE', entityType: 'Property', entityId: property.id, ...getAuditContext(req), newData: property });
   res.status(201).json(property);
 }));
 
@@ -232,6 +234,7 @@ app.post('/api/inspections', authenticateToken, authorizeRoles('ADMIN', 'MANAGER
       status: 'DRAFT'
     }
   });
+  await createAuditEntry({ action: 'CREATE', entityType: 'Inspection', entityId: inspection.id, ...getAuditContext(req), newData: inspection });
   res.status(201).json(inspection);
 }));
 
@@ -263,6 +266,7 @@ app.post('/api/inspections/:id/results', authenticateToken, authorizeRoles('ADMI
       where: { id: existingResult.id },
       data: { status, comment: comment || null, photo_url: photoUrl || null }
     });
+    await createAuditEntry({ action: 'UPDATE', entityType: 'InspectionResult', entityId: result.id, ...getAuditContext(req), previousData: existingResult, newData: result });
     return res.json(result);
   }
 
@@ -275,6 +279,7 @@ app.post('/api/inspections/:id/results', authenticateToken, authorizeRoles('ADMI
       photo_url: photoUrl || null
     }
   });
+  await createAuditEntry({ action: 'CREATE', entityType: 'InspectionResult', entityId: result.id, ...getAuditContext(req), newData: result });
   res.status(201).json(result);
 }));
 
@@ -313,6 +318,7 @@ app.post('/api/inspections/:id/complete', authenticateToken, authorizeRoles('ADM
     include: { property: true }
   });
 
+  await createAuditEntry({ action: 'UPDATE', entityType: 'Inspection', entityId: inspectionId, ...getAuditContext(req), previousData: { status: 'DRAFT' }, newData: { status: 'COMPLETED' } });
   logger.info('Inspection completed', { inspectionId });
   res.json(inspection);
 }));
