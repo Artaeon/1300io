@@ -17,6 +17,12 @@ const createPropertySchema = z.object({
   units_count: z.coerce.number().int().positive('Units count must be a positive integer'),
 });
 
+const updatePropertySchema = z.object({
+  address: z.string().min(1).max(500).optional(),
+  owner_name: z.string().min(1).max(200).optional(),
+  units_count: z.coerce.number().int().positive().optional(),
+}).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
+
 const createInspectionSchema = z.object({
   propertyId: z.coerce.number().int().positive(),
   inspectorName: z.string().min(1, 'Inspector name is required').max(200),
@@ -64,6 +70,7 @@ module.exports = {
   registerSchema,
   loginSchema,
   createPropertySchema,
+  updatePropertySchema,
   createInspectionSchema,
   inspectionResultSchema,
   idParamSchema,

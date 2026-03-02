@@ -15,6 +15,7 @@ const { asyncHandler, errorHandler } = require('./middleware/errorHandler');
 const { createAuditEntry, getAuditContext } = require('./audit');
 const {
   createPropertySchema,
+  updatePropertySchema,
   createInspectionSchema,
   inspectionResultSchema,
   idParamSchema,
@@ -202,6 +203,44 @@ app.get('/api/properties/:id', authenticateToken, validateParams(idParamSchema),
   });
   if (!property) return res.status(404).json({ error: 'Property not found' });
   res.json(property);
+}));
+
+// Update property
+app.put('/api/properties/:id', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'), validateParams(idParamSchema), validateBody(updatePropertySchema), asyncHandler(async (req, res) => {
+  const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
+  if (!property) return res.status(404).json({ error: 'Property not found' });
+
+  const updated = await prisma.property.update({
+    where: { id: req.validatedParams.id },
+    data: req.validatedBody
+  });
+
+  await createAuditEntry({ action: 'UPDATE', entityType: 'Property', entityId: updated.id, ...getAuditContext(req), previousData: property, newData: updated });
+  res.json(updated);
+}));
+
+// Delete property
+app.delete('/api/properties/:id', authenticateToken, authorizeRoles('ADMIN'), validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
+  if (!property) return res.status(404).json({ error: 'Property not found' });
+
+  // Block if active draft inspections exist
+  const activeDraft = await prisma.inspection.findFirst({
+    where: { property_id: req.validatedParams.id, status: 'DRAFT' }
+  });
+  if (activeDraft) {
+    return res.status(409).json({ error: 'Cannot delete property with active draft inspections' });
+  }
+
+  // Cascade delete: results -> inspections -> property
+  await prisma.inspectionResult.deleteMany({
+    where: { inspection: { property_id: req.validatedParams.id } }
+  });
+  await prisma.inspection.deleteMany({ where: { property_id: req.validatedParams.id } });
+  await prisma.property.delete({ where: { id: req.validatedParams.id } });
+
+  await createAuditEntry({ action: 'DELETE', entityType: 'Property', entityId: req.validatedParams.id, ...getAuditContext(req), previousData: property });
+  res.json({ message: 'Property deleted' });
 }));
 
 // Check for existing draft inspection for a property
