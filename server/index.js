@@ -193,7 +193,7 @@ app.use('/api/auth', authRoutes);
 
 app.get('/api/users', authenticateToken, authorizeRoles('ADMIN'), asyncHandler(async (req, res) => {
   const users = await prisma.user.findMany({
-    select: { id: true, email: true, name: true, role: true, createdAt: true, updatedAt: true }
+    select: { id: true, email: true, name: true, role: true, organizationId: true, createdAt: true, updatedAt: true }
   });
   res.json(users);
 }));
