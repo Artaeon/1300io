@@ -582,6 +582,87 @@ describe('File Upload', () => {
   });
 });
 
+// ==================== User Management ====================
+describe('User Management', () => {
+  let createdUserId;
+
+  it('GET /api/users should list all users (admin)', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    // Should not include password
+    expect(res.body[0].password).toBeUndefined();
+  });
+
+  it('GET /api/users should be denied for non-admin', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${readonlyToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('POST /api/users should create a user (admin)', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ email: 'manager@test.com', password: 'password123', name: 'Manager User', role: 'MANAGER' });
+    expect(res.status).toBe(201);
+    expect(res.body.email).toBe('manager@test.com');
+    expect(res.body.role).toBe('MANAGER');
+    createdUserId = res.body.id;
+  });
+
+  it('POST /api/users should reject duplicate email', async () => {
+    const res = await request(app)
+      .post('/api/users')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ email: 'manager@test.com', password: 'password123', name: 'Dup', role: 'INSPECTOR' });
+    expect(res.status).toBe(409);
+  });
+
+  it('PUT /api/users/:id should update user (admin)', async () => {
+    const res = await request(app)
+      .put(`/api/users/${createdUserId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'Updated Manager', role: 'ADMIN' });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('Updated Manager');
+    expect(res.body.role).toBe('ADMIN');
+  });
+
+  it('PUT /api/users/:id should return 404 for nonexistent', async () => {
+    const res = await request(app)
+      .put('/api/users/99999')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'Ghost' });
+    expect(res.status).toBe(404);
+  });
+
+  it('DELETE /api/users/:id should prevent self-delete', async () => {
+    // Find admin user id
+    const users = await prisma.user.findMany({ where: { email: 'admin@test.com' } });
+    const res = await request(app)
+      .delete(`/api/users/${users[0].id}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/own account/);
+  });
+
+  it('DELETE /api/users/:id should delete user (admin)', async () => {
+    const res = await request(app)
+      .delete(`/api/users/${createdUserId}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+
+    // Verify deleted
+    const check = await prisma.user.findUnique({ where: { id: createdUserId } });
+    expect(check).toBeNull();
+  });
+});
+
 // ==================== Audit Logging ====================
 describe('Audit Logging', () => {
   it('should create audit log entry when property is created', async () => {
