@@ -53,6 +53,27 @@ const updateUserSchema = z.object({
   role: z.enum(VALID_ROLES).optional(),
 }).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
 
+const createCategorySchema = z.object({
+  name: z.string().min(1, 'Category name is required').max(200),
+  sort_order: z.coerce.number().int().min(0).optional(),
+});
+
+const updateCategorySchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  sort_order: z.coerce.number().int().min(0).optional(),
+}).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
+
+const createItemSchema = z.object({
+  text: z.string().min(1, 'Item text is required').max(500),
+  category_id: z.coerce.number().int().positive(),
+  sort_order: z.coerce.number().int().min(0).optional(),
+});
+
+const updateItemSchema = z.object({
+  text: z.string().min(1).max(500).optional(),
+  sort_order: z.coerce.number().int().min(0).optional(),
+}).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
+
 const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -91,6 +112,10 @@ module.exports = {
   inspectionResultSchema,
   createUserSchema,
   updateUserSchema,
+  createCategorySchema,
+  updateCategorySchema,
+  createItemSchema,
+  updateItemSchema,
   idParamSchema,
   validateBody,
   validateParams,
