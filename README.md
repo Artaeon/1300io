@@ -37,27 +37,47 @@
 
 ## Screenshots
 
+### Light Mode
+
 <table>
   <tr>
     <td align="center"><strong>Login</strong></td>
     <td align="center"><strong>Dashboard</strong></td>
+    <td align="center"><strong>Property Detail</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/login.png" width="300" alt="Login screen" /></td>
-    <td><img src="docs/screenshots/dashboard.png" width="300" alt="Dashboard" /></td>
+    <td><img src="docs/screenshots/login.png" width="260" alt="Login screen" /></td>
+    <td><img src="docs/screenshots/dashboard.png" width="260" alt="Dashboard" /></td>
+    <td><img src="docs/screenshots/property-detail.png" width="260" alt="Property detail with QR code and defect tracking" /></td>
   </tr>
   <tr>
     <td align="center"><strong>Inspection Wizard</strong></td>
-    <td align="center"><strong>PDF Report</strong></td>
+    <td align="center"><strong>Inspection Complete</strong></td>
+    <td align="center"><strong>Admin Panel</strong></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/inspection-wizard.png" width="300" alt="Inspection wizard" /></td>
-    <td><img src="docs/screenshots/pdf-report.png" width="300" alt="PDF report" /></td>
+    <td><img src="docs/screenshots/inspection-wizard.png" width="260" alt="Mobile inspection checklist" /></td>
+    <td><img src="docs/screenshots/pdf-report.png" width="260" alt="Inspection completion and PDF download" /></td>
+    <td><img src="docs/screenshots/admin-panel.png" width="260" alt="Admin user management" /></td>
   </tr>
 </table>
 
-<!-- To update screenshots: run the app locally, navigate to each page, and save to docs/screenshots/ -->
-<!-- Additional screenshots to capture: property-detail.png, admin-panel.png, dark-mode.png -->
+### Dark Mode
+
+<table>
+  <tr>
+    <td align="center"><strong>Login</strong></td>
+    <td align="center"><strong>Dashboard</strong></td>
+    <td align="center"><strong>Inspection Wizard</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/login-dark.png" width="260" alt="Login dark mode" /></td>
+    <td><img src="docs/screenshots/dashboard-dark.png" width="260" alt="Dashboard dark mode" /></td>
+    <td><img src="docs/screenshots/inspection-wizard-dark.png" width="260" alt="Inspection wizard dark mode" /></td>
+  </tr>
+</table>
+
+<!-- Screenshots generated with: node take-screenshots.mjs -->
 
 ---
 
