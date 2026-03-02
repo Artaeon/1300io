@@ -29,6 +29,7 @@ export default function InspectionWizard() {
     const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [inspectionId, setInspectionId] = useState(null);
+    const [openDefects, setOpenDefects] = useState({}); // itemId -> defect info
 
     // Draft resume state
     const [existingDraft, setExistingDraft] = useState(null);
@@ -109,15 +110,31 @@ export default function InspectionWizard() {
         }
     }, [authFetch, propertyId, user?.name, showToast]);
 
-    // Initialize — check for draft, load checklist
+    // Initialize — check for draft, load checklist, fetch open defects
     useEffect(() => {
         const init = async () => {
             try {
-                // Fetch checklist
-                const catRes = await authFetch('/api/checklist/categories');
+                // Fetch checklist and open defects in parallel
+                const [catRes, defectsRes] = await Promise.all([
+                    authFetch('/api/checklist/categories'),
+                    authFetch(`/api/properties/${propertyId}/defects`)
+                ]);
+
                 if (!catRes.ok) throw new Error('Failed to load checklist');
                 const catData = await catRes.json();
                 setCategories(catData);
+
+                // Build lookup of open defects by checklist item id
+                if (defectsRes.ok) {
+                    const allDefects = await defectsRes.json();
+                    const openMap = {};
+                    allDefects.forEach(d => {
+                        if (d.status === 'OPEN') {
+                            openMap[d.checklist_item_id] = d;
+                        }
+                    });
+                    setOpenDefects(openMap);
+                }
 
                 // Check for existing draft
                 const draftRes = await authFetch(`/api/properties/${propertyId}/draft-inspection`);
@@ -323,11 +340,20 @@ export default function InspectionWizard() {
                     const answer = answers[item.id] || {};
                     const isUploading = uploadingItems[item.id];
                     const justSaved = savingStatus[item.id];
+                    const hasOpenDefect = openDefects[item.id];
 
                     return (
-                        <div key={item.id} className={`bg-white p-4 rounded-xl shadow-sm border transition-all duration-200 ${justSaved ? 'border-green-400 ring-2 ring-green-200' : 'border-gray-100'
+                        <div key={item.id} className={`bg-white p-4 rounded-xl shadow-sm border transition-all duration-200 ${justSaved ? 'border-green-400 ring-2 ring-green-200' : hasOpenDefect ? 'border-orange-300 ring-1 ring-orange-200' : 'border-gray-100'
                             }`}>
-                            <p className="font-medium text-gray-800 text-lg mb-4">{item.text}</p>
+                            <div className="flex items-start justify-between gap-2 mb-4">
+                                <p className="font-medium text-gray-800 text-lg">{item.text}</p>
+                                {hasOpenDefect && (
+                                    <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-full whitespace-nowrap shrink-0">
+                                        <AlertTriangle size={12} />
+                                        Vorheriger Mangel
+                                    </span>
+                                )}
+                            </div>
 
                             {/* Status Buttons */}
                             <div className="grid grid-cols-3 gap-2">

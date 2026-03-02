@@ -287,7 +287,9 @@ export default function Dashboard() {
                                     </div>
 
                                     {/* Property Info */}
-                                    <h3 className="text-lg font-bold text-gray-900 mb-1">{prop.address}</h3>
+                                    <Link to={`/properties/${prop.id}`} className="block">
+                                        <h3 className="text-lg font-bold text-gray-900 mb-1 hover:text-blue-600 transition-colors">{prop.address}</h3>
+                                    </Link>
                                     <div className="flex items-center text-gray-500 text-sm mb-4">
                                         <MapPin size={14} className="mr-1" />
                                         <span>{prop.units_count} Einheiten • {prop.owner_name}</span>

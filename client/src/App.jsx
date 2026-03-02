@@ -6,6 +6,7 @@ import InspectionFinish from './components/InspectionFinish';
 import Login from './components/Login';
 import AddProperty from './components/AddProperty';
 import EditProperty from './components/EditProperty';
+import PropertyDetail from './components/PropertyDetail';
 import UserManagement from './components/admin/UserManagement';
 import ChecklistManagement from './components/admin/ChecklistManagement';
 import Impressum from './components/Impressum';
@@ -41,6 +42,10 @@ function App() {
 
             <Route path="/properties/new" element={
               <ProtectedRoute><AddProperty /></ProtectedRoute>
+            } />
+
+            <Route path="/properties/:id" element={
+              <ProtectedRoute><PropertyDetail /></ProtectedRoute>
             } />
 
             <Route path="/properties/:id/edit" element={
