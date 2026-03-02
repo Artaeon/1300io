@@ -203,8 +203,37 @@ export default function InspectionWizard() {
 
         setUploadingItems(prev => ({ ...prev, [itemId]: true }));
 
+        // Compress image before upload (max 1920px width, 0.8 quality)
+        let uploadFile = file;
+        if (file.type.startsWith('image/')) {
+            try {
+                uploadFile = await new Promise((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const MAX_WIDTH = 1920;
+                        let { width, height } = img;
+                        if (width > MAX_WIDTH) {
+                            height = Math.round(height * (MAX_WIDTH / width));
+                            width = MAX_WIDTH;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(blob ? new File([blob], file.name, { type: 'image/jpeg' }) : file);
+                        }, 'image/jpeg', 0.8);
+                    };
+                    img.onerror = () => resolve(file);
+                    img.src = URL.createObjectURL(file);
+                });
+            } catch {
+                uploadFile = file;
+            }
+        }
+
         const formData = new FormData();
-        formData.append('photo', file);
+        formData.append('photo', uploadFile);
 
         try {
             const res = await authFetch('/api/upload', {
