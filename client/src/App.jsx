@@ -6,6 +6,7 @@ import InspectionFinish from './components/InspectionFinish';
 import Login from './components/Login';
 import AddProperty from './components/AddProperty';
 import EditProperty from './components/EditProperty';
+import UserManagement from './components/admin/UserManagement';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -13,6 +14,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
+  return children;
+};
+
+const AdminRoute = ({ children }) => {
+  const { token, user } = useAuth();
+  if (!token) return <Navigate to="/login" replace />;
+  if (user?.role !== 'ADMIN') return <Navigate to="/" replace />;
   return children;
 };
 
@@ -44,6 +52,11 @@ function App() {
 
             <Route path="/inspection/finish/:id" element={
               <ProtectedRoute><InspectionFinish /></ProtectedRoute>
+            } />
+
+            {/* Admin Routes */}
+            <Route path="/admin/users" element={
+              <AdminRoute><UserManagement /></AdminRoute>
             } />
           </Routes>
         </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2 } from 'lucide-react';
+import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LegalFooter from './LegalFooter';
 
@@ -47,7 +47,7 @@ export default function Dashboard() {
     const [properties, setProperties] = useState([]);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { logout, authFetch } = useAuth();
+    const { user, logout, authFetch } = useAuth();
 
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -132,9 +132,16 @@ export default function Dashboard() {
             <div className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
                     <h1 className="text-xl font-bold text-gray-900">PropSecure</h1>
-                    <button onClick={logout} className="text-gray-500 hover:text-red-500 p-2">
-                        <LogOut size={22} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {user?.role === 'ADMIN' && (
+                            <Link to="/admin/users" className="text-gray-500 hover:text-blue-600 p-2" title="Verwaltung">
+                                <Settings size={22} />
+                            </Link>
+                        )}
+                        <button onClick={logout} className="text-gray-500 hover:text-red-500 p-2">
+                            <LogOut size={22} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
