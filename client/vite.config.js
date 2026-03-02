@@ -12,13 +12,19 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://server:3000',
+        target: process.env.VITE_API_TARGET || 'http://server:3000',
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'http://server:3000',
+        target: process.env.VITE_API_TARGET || 'http://server:3000',
         changeOrigin: true,
       }
     }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.js'],
+    css: true,
   }
 })
