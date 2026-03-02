@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download } from 'lucide-react';
+import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LegalFooter from './LegalFooter';
 
@@ -48,6 +48,30 @@ export default function Dashboard() {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const { token, logout } = useAuth();
+
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
+    const handleDeleteProperty = useCallback(async (propertyId) => {
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/properties/${propertyId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setProperties(prev => prev.filter(p => p.id !== propertyId));
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Löschen fehlgeschlagen');
+            }
+        } catch {
+            alert('Verbindungsfehler');
+        } finally {
+            setDeleting(false);
+            setDeleteConfirm(null);
+        }
+    }, [token]);
 
     // PDF Download helper
     const handleDownloadPDF = useCallback(async (inspectionId) => {
@@ -187,18 +211,34 @@ export default function Dashboard() {
                         {properties.map(prop => (
                             <div key={prop.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
                                 <div className="p-5">
-                                    {/* Status Badge */}
+                                    {/* Status Badge & Actions */}
                                     <div className="flex justify-between items-start mb-3">
                                         <InspectionStatusBadge lastInspection={prop.lastInspection} />
-                                        {prop.lastInspection && (
-                                            <button
-                                                onClick={() => handleDownloadPDF(prop.lastInspection.id)}
+                                        <div className="flex items-center gap-1">
+                                            {prop.lastInspection && (
+                                                <button
+                                                    onClick={() => handleDownloadPDF(prop.lastInspection.id)}
+                                                    className="text-gray-400 hover:text-blue-600 p-1"
+                                                    title="Letzten Bericht herunterladen"
+                                                >
+                                                    <FileText size={18} />
+                                                </button>
+                                            )}
+                                            <Link
+                                                to={`/properties/${prop.id}/edit`}
                                                 className="text-gray-400 hover:text-blue-600 p-1"
-                                                title="Letzten Bericht herunterladen"
+                                                title="Bearbeiten"
                                             >
-                                                <FileText size={18} />
+                                                <Pencil size={18} />
+                                            </Link>
+                                            <button
+                                                onClick={() => setDeleteConfirm(prop.id)}
+                                                className="text-gray-400 hover:text-red-600 p-1"
+                                                title="Löschen"
+                                            >
+                                                <Trash2 size={18} />
                                             </button>
-                                        )}
+                                        </div>
                                     </div>
 
                                     {/* Property Info */}
@@ -231,6 +271,33 @@ export default function Dashboard() {
                     </div>
                 </section>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Objekt löschen?</h3>
+                        <p className="text-gray-600 mb-6">
+                            Diese Aktion löscht das Objekt und alle zugehörigen Prüfungen unwiderruflich.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirm(null)}
+                                className="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+                            >
+                                Abbrechen
+                            </button>
+                            <button
+                                onClick={() => handleDeleteProperty(deleteConfirm)}
+                                disabled={deleting}
+                                className="flex-1 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-gray-400"
+                            >
+                                {deleting ? 'Löschen...' : 'Löschen'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* FAB - Add Property */}
             <Link

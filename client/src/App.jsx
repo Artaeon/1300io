@@ -5,6 +5,7 @@ import InspectionWizard from './components/InspectionWizard';
 import InspectionFinish from './components/InspectionFinish';
 import Login from './components/Login';
 import AddProperty from './components/AddProperty';
+import EditProperty from './components/EditProperty';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -31,6 +32,10 @@ function App() {
 
             <Route path="/properties/new" element={
               <ProtectedRoute><AddProperty /></ProtectedRoute>
+            } />
+
+            <Route path="/properties/:id/edit" element={
+              <ProtectedRoute><EditProperty /></ProtectedRoute>
             } />
 
             <Route path="/inspection/new/:propertyId" element={
