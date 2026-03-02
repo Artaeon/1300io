@@ -391,3 +391,40 @@ describe('File Upload', () => {
     expect(res.body.url).toMatch(/^\/uploads\//);
   });
 });
+
+// ==================== Audit Logging ====================
+describe('Audit Logging', () => {
+  it('should create audit log entry when property is created', async () => {
+    const logs = await prisma.auditLog.findMany({
+      where: { entityType: 'Property', action: 'CREATE' }
+    });
+    expect(logs.length).toBeGreaterThan(0);
+    expect(logs[0].newData).toBeTruthy();
+  });
+
+  it('should create audit log entry when inspection is created', async () => {
+    const logs = await prisma.auditLog.findMany({
+      where: { entityType: 'Inspection', action: 'CREATE' }
+    });
+    expect(logs.length).toBeGreaterThan(0);
+  });
+
+  it('should create audit log entry when inspection result is saved', async () => {
+    const logs = await prisma.auditLog.findMany({
+      where: { entityType: 'InspectionResult' }
+    });
+    expect(logs.length).toBeGreaterThan(0);
+  });
+
+  it('should create audit log entry when inspection is completed', async () => {
+    const logs = await prisma.auditLog.findMany({
+      where: { entityType: 'Inspection', action: 'UPDATE' }
+    });
+    expect(logs.length).toBeGreaterThan(0);
+    const completionLog = logs.find(l => {
+      const newData = JSON.parse(l.newData);
+      return newData.status === 'COMPLETED';
+    });
+    expect(completionLog).toBeTruthy();
+  });
+});
