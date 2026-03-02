@@ -5,14 +5,17 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
-  name     String
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("INSPECTOR") // ADMIN, MANAGER, INSPECTOR, READONLY
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Property {
@@ -21,6 +24,8 @@ model Property {
   owner_name  String
   units_count Int
   inspections Inspection[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Inspection {
@@ -28,16 +33,19 @@ model Inspection {
   property_id     Int
   property        Property           @relation(fields: [property_id], references: [id])
   date            DateTime           @default(now())
-  ended_at        DateTime?          // When inspection was completed
+  ended_at        DateTime?
   status          String             @default("DRAFT") // DRAFT, COMPLETED
   inspector_name  String
   results         InspectionResult[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 }
 
 model ChecklistCategory {
-  id    Int             @id @default(autoincrement())
-  name  String
-  items ChecklistItem[]
+  id        Int             @id @default(autoincrement())
+  name      String
+  items     ChecklistItem[]
+  createdAt DateTime        @default(now())
 }
 
 model ChecklistItem {
@@ -46,6 +54,7 @@ model ChecklistItem {
   category    ChecklistCategory @relation(fields: [category_id], references: [id])
   text        String
   results     InspectionResult[]
+  createdAt   DateTime          @default(now())
 }
 
 model InspectionResult {
@@ -57,4 +66,19 @@ model InspectionResult {
   status            String        // OK, DEFECT, NOT_APPLICABLE
   comment           String?
   photo_url         String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model AuditLog {
+  id           Int      @id @default(autoincrement())
+  action       String   // CREATE, UPDATE, DELETE
+  entityType   String   // User, Property, Inspection, InspectionResult
+  entityId     Int
+  userId       Int?
+  ipAddress    String?
+  userAgent    String?
+  previousData String?  // JSON string of previous state
+  newData      String?  // JSON string of new state
+  timestamp    DateTime @default(now())
 }
