@@ -15,7 +15,7 @@ const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
 function generateAccessToken(user) {
     return jwt.sign(
-        { userId: user.id, role: user.role },
+        { userId: user.id, role: user.role, organizationId: user.organizationId || null },
         config.jwtSecret,
         { expiresIn: ACCESS_TOKEN_EXPIRY }
     );

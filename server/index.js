@@ -25,6 +25,8 @@ const {
   updateCategorySchema,
   createItemSchema,
   updateItemSchema,
+  createOrganizationSchema,
+  updateOrganizationSchema,
   idParamSchema,
   validateBody,
   validateParams,
@@ -118,6 +120,25 @@ function authorizeRoles(...roles) {
     next();
   };
 }
+
+// --- Organization scoping middleware ---
+
+const injectOrgFilter = async (req, res, next) => {
+  if (!req.user) return next();
+  // ADMIN users without an org see all data
+  if (req.user.role === 'ADMIN' && !req.user.organizationId) {
+    req.orgFilter = {};
+    return next();
+  }
+  // Users with an org are scoped to it
+  if (req.user.organizationId) {
+    req.orgFilter = { organizationId: req.user.organizationId };
+  } else {
+    // Users without an org see unscoped data
+    req.orgFilter = {};
+  }
+  next();
+};
 
 // --- Rate limiters for sensitive endpoints ---
 
@@ -232,19 +253,91 @@ app.delete('/api/users/:id', authenticateToken, authorizeRoles('ADMIN'), validat
   res.json({ message: 'User deleted' });
 }));
 
+// --- Organizations (ADMIN only) ---
+
+app.get('/api/organizations', authenticateToken, authorizeRoles('ADMIN'), asyncHandler(async (req, res) => {
+  const orgs = await prisma.organization.findMany({
+    orderBy: { name: 'asc' },
+    include: {
+      _count: { select: { users: true, properties: true } }
+    }
+  });
+  res.json(orgs);
+}));
+
+app.post('/api/organizations', authenticateToken, authorizeRoles('ADMIN'), validateBody(createOrganizationSchema), asyncHandler(async (req, res) => {
+  const { name } = req.validatedBody;
+  const org = await prisma.organization.create({ data: { name } });
+  await createAuditEntry({ action: 'CREATE', entityType: 'Organization', entityId: org.id, ...getAuditContext(req), newData: org });
+  res.status(201).json(org);
+}));
+
+app.put('/api/organizations/:id', authenticateToken, authorizeRoles('ADMIN'), validateParams(idParamSchema), validateBody(updateOrganizationSchema), asyncHandler(async (req, res) => {
+  const org = await prisma.organization.findUnique({ where: { id: req.validatedParams.id } });
+  if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+  const updated = await prisma.organization.update({
+    where: { id: req.validatedParams.id },
+    data: req.validatedBody
+  });
+  await createAuditEntry({ action: 'UPDATE', entityType: 'Organization', entityId: updated.id, ...getAuditContext(req), previousData: org, newData: updated });
+  res.json(updated);
+}));
+
+app.delete('/api/organizations/:id', authenticateToken, authorizeRoles('ADMIN'), validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const org = await prisma.organization.findUnique({ where: { id: req.validatedParams.id } });
+  if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+  // Unlink users and properties before deleting
+  await prisma.user.updateMany({ where: { organizationId: req.validatedParams.id }, data: { organizationId: null } });
+  await prisma.property.updateMany({ where: { organizationId: req.validatedParams.id }, data: { organizationId: null } });
+  await prisma.organization.delete({ where: { id: req.validatedParams.id } });
+
+  await createAuditEntry({ action: 'DELETE', entityType: 'Organization', entityId: req.validatedParams.id, ...getAuditContext(req), previousData: org });
+  res.json({ message: 'Organization deleted' });
+}));
+
+// Assign user to organization
+app.put('/api/organizations/:id/users/:userId', authenticateToken, authorizeRoles('ADMIN'), validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const orgId = req.validatedParams.id;
+  const userId = parseInt(req.params.userId);
+  if (isNaN(userId) || userId < 1) return res.status(400).json({ error: 'Invalid user ID' });
+
+  const org = await prisma.organization.findUnique({ where: { id: orgId } });
+  if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  await prisma.user.update({ where: { id: userId }, data: { organizationId: orgId } });
+  res.json({ message: 'User assigned to organization' });
+}));
+
+// Remove user from organization
+app.delete('/api/organizations/:id/users/:userId', authenticateToken, authorizeRoles('ADMIN'), validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const userId = parseInt(req.params.userId);
+  if (isNaN(userId) || userId < 1) return res.status(400).json({ error: 'Invalid user ID' });
+
+  await prisma.user.update({ where: { id: userId }, data: { organizationId: null } });
+  res.json({ message: 'User removed from organization' });
+}));
+
 // --- Properties ---
 
-app.get('/api/properties', authenticateToken, asyncHandler(async (req, res) => {
+app.get('/api/properties', authenticateToken, injectOrgFilter, asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
   const search = req.query.search?.trim() || '';
 
-  const where = search ? {
-    OR: [
-      { address: { contains: search } },
-      { owner_name: { contains: search } }
-    ]
-  } : {};
+  const where = {
+    ...req.orgFilter,
+    ...(search ? {
+      OR: [
+        { address: { contains: search } },
+        { owner_name: { contains: search } }
+      ]
+    } : {})
+  };
 
   const [total, properties] = await Promise.all([
     prisma.property.count({ where }),
@@ -276,7 +369,7 @@ app.get('/api/properties', authenticateToken, asyncHandler(async (req, res) => {
 app.post('/api/properties', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'), validateBody(createPropertySchema), asyncHandler(async (req, res) => {
   const { address, owner_name, units_count } = req.validatedBody;
   const property = await prisma.property.create({
-    data: { address, owner_name, units_count }
+    data: { address, owner_name, units_count, organizationId: req.user.organizationId || null }
   });
   await createAuditEntry({ action: 'CREATE', entityType: 'Property', entityId: property.id, ...getAuditContext(req), newData: property });
   res.status(201).json(property);

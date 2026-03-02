@@ -74,6 +74,14 @@ const updateItemSchema = z.object({
   sort_order: z.coerce.number().int().min(0).optional(),
 }).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
 
+const createOrganizationSchema = z.object({
+  name: z.string().min(1, 'Organization name is required').max(200),
+});
+
+const updateOrganizationSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+}).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
+
 const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -116,6 +124,8 @@ module.exports = {
   updateCategorySchema,
   createItemSchema,
   updateItemSchema,
+  createOrganizationSchema,
+  updateOrganizationSchema,
   idParamSchema,
   validateBody,
   validateParams,
