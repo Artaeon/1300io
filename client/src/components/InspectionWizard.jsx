@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Camera, Check, AlertTriangle, XCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { Camera, Check, AlertTriangle, XCircle, ArrowRight, Loader2, RotateCcw } from 'lucide-react';
 
 // Toast Component
 const Toast = ({ message, type, onClose }) => {
@@ -30,80 +30,170 @@ export default function InspectionWizard() {
     const [answers, setAnswers] = useState({});
     const [inspectionId, setInspectionId] = useState(null);
 
+    // Draft resume state
+    const [existingDraft, setExistingDraft] = useState(null);
+    const [showResumeDialog, setShowResumeDialog] = useState(false);
+
     // Loading & Error States
-    const [uploadingItems, setUploadingItems] = useState({}); // { itemId: true/false }
-    const [savingStatus, setSavingStatus] = useState({}); // { itemId: true/false }
+    const [uploadingItems, setUploadingItems] = useState({});
+    const [savingStatus, setSavingStatus] = useState({});
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState(null);
 
-    // Show toast helper
+    // Debounce timers for comment auto-save
+    const commentTimers = useRef({});
+
     const showToast = useCallback((message, type = 'success') => {
         setToast({ message, type });
     }, []);
 
-    // Initialize Inspection
+    // Save a single result to the server
+    const saveResult = useCallback(async (inspId, itemId, answer) => {
+        if (!inspId || !answer.status) return;
+        try {
+            await fetch(`/api/inspections/${inspId}/results`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    checklistItemId: parseInt(itemId),
+                    status: answer.status,
+                    comment: answer.comment || '',
+                    photoUrl: answer.photoUrl || ''
+                })
+            });
+        } catch {
+            showToast('Speichern fehlgeschlagen', 'error');
+        }
+    }, [token, showToast]);
+
+    // Resume a draft — load existing results into answers state
+    const resumeDraft = useCallback(async (draftId) => {
+        setInspectionId(draftId);
+        setShowResumeDialog(false);
+        try {
+            const res = await fetch(`/api/inspections/${draftId}/results`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Failed to load results');
+            const results = await res.json();
+            const restored = {};
+            results.forEach(r => {
+                restored[r.checklist_item_id] = {
+                    status: r.status,
+                    comment: r.comment || '',
+                    photoUrl: r.photo_url || ''
+                };
+            });
+            setAnswers(restored);
+            showToast('Entwurf wiederhergestellt');
+        } catch {
+            showToast('Entwurf konnte nicht geladen werden', 'error');
+        }
+    }, [token, showToast]);
+
+    // Create a new inspection
+    const createNewInspection = useCallback(async () => {
+        setShowResumeDialog(false);
+        try {
+            const res = await fetch('/api/inspections', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    propertyId,
+                    inspectorName: user?.name || 'Inspector'
+                })
+            });
+            if (!res.ok) throw new Error('Inspection creation failed');
+            const data = await res.json();
+            setInspectionId(data.id);
+        } catch {
+            showToast('Prüfung konnte nicht erstellt werden!', 'error');
+        }
+    }, [token, propertyId, user?.name, showToast]);
+
+    // Initialize — check for draft, load checklist
     useEffect(() => {
         if (!token) return;
 
-        // 1. Create Inspection instance
-        fetch('/api/inspections', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                propertyId,
-                inspectorName: user?.name || 'Inspector'
-            })
-        })
-            .then(res => {
-                if (!res.ok) throw new Error('Inspection creation failed');
-                return res.json();
-            })
-            .then(data => setInspectionId(data.id))
-            .catch(err => {
-                console.error("Failed to create inspection", err);
-                showToast('Prüfung konnte nicht erstellt werden!', 'error');
-            });
+        const init = async () => {
+            try {
+                // Fetch checklist
+                const catRes = await fetch('/api/checklist/categories', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!catRes.ok) throw new Error('Failed to load checklist');
+                const catData = await catRes.json();
+                setCategories(catData);
 
-        // 2. Fetch Checklist
-        fetch('/api/checklist/categories', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(res.statusText);
-                return res.json();
-            })
-            .then(data => {
-                setCategories(data);
+                // Check for existing draft
+                const draftRes = await fetch(`/api/properties/${propertyId}/draft-inspection`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const draft = await draftRes.json();
+
+                if (draft) {
+                    setExistingDraft(draft);
+                    setShowResumeDialog(true);
+                } else {
+                    await createNewInspection();
+                }
+            } catch {
+                showToast('Initialisierung fehlgeschlagen!', 'error');
+            } finally {
                 setLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to fetch checklist", err);
-                showToast('Checkliste konnte nicht geladen werden!', 'error');
-            });
-    }, [propertyId, token, showToast]);
+            }
+        };
+        init();
+    }, [propertyId, token, showToast, createNewInspection]);
 
-    const handleStatusChange = (itemId, status) => {
-        setAnswers(prev => ({
-            ...prev,
-            [itemId]: { ...prev[itemId], status, comment: prev[itemId]?.comment || '', photoUrl: prev[itemId]?.photoUrl || '' }
-        }));
+    // Auto-save on status change
+    const handleStatusChange = useCallback((itemId, status) => {
+        setAnswers(prev => {
+            const updated = {
+                ...prev,
+                [itemId]: { ...prev[itemId], status, comment: prev[itemId]?.comment || '', photoUrl: prev[itemId]?.photoUrl || '' }
+            };
+            // Auto-save immediately
+            if (inspectionId) {
+                saveResult(inspectionId, itemId, updated[itemId]);
+            }
+            return updated;
+        });
 
-        // Visual feedback - brief "saved" indication
+        // Visual feedback
         setSavingStatus(prev => ({ ...prev, [itemId]: true }));
         setTimeout(() => {
             setSavingStatus(prev => ({ ...prev, [itemId]: false }));
         }, 300);
-    };
+    }, [inspectionId, saveResult]);
 
-    const handleDefectUpdate = (itemId, field, value) => {
-        setAnswers(prev => ({
-            ...prev,
-            [itemId]: { ...prev[itemId], [field]: value }
-        }));
-    };
+    // Update defect details (comment, photoUrl)
+    const handleDefectUpdate = useCallback((itemId, field, value) => {
+        setAnswers(prev => {
+            const updated = {
+                ...prev,
+                [itemId]: { ...prev[itemId], [field]: value }
+            };
+
+            // Debounce comment auto-save (1s)
+            if (field === 'comment' && inspectionId && updated[itemId]?.status) {
+                if (commentTimers.current[itemId]) {
+                    clearTimeout(commentTimers.current[itemId]);
+                }
+                commentTimers.current[itemId] = setTimeout(() => {
+                    saveResult(inspectionId, itemId, updated[itemId]);
+                }, 1000);
+            }
+
+            return updated;
+        });
+    }, [inspectionId, saveResult]);
 
     const handleFileUpload = async (itemId, file) => {
         if (!file) return;
@@ -123,41 +213,22 @@ export default function InspectionWizard() {
             if (!res.ok) throw new Error('Upload failed');
 
             const data = await res.json();
-            handleDefectUpdate(itemId, 'photoUrl', data.url);
+            setAnswers(prev => {
+                const updated = {
+                    ...prev,
+                    [itemId]: { ...prev[itemId], photoUrl: data.url }
+                };
+                // Auto-save after photo upload
+                if (inspectionId && updated[itemId]?.status) {
+                    saveResult(inspectionId, itemId, updated[itemId]);
+                }
+                return updated;
+            });
             showToast('Foto erfolgreich hochgeladen!');
-        } catch (err) {
-            console.error("Upload failed", err);
+        } catch {
             showToast('Upload fehlgeschlagen! Bitte erneut versuchen.', 'error');
         } finally {
             setUploadingItems(prev => ({ ...prev, [itemId]: false }));
-        }
-    };
-
-    const saveResults = async () => {
-        const promises = Object.entries(answers).map(([itemId, answer]) => {
-            return fetch(`/api/inspections/${inspectionId}/results`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    checklistItemId: parseInt(itemId),
-                    status: answer.status,
-                    comment: answer.comment || '',
-                    photoUrl: answer.photoUrl || ''
-                })
-            }).then(res => {
-                if (!res.ok) throw new Error(`Failed to save result for item ${itemId}`);
-                return res.json();
-            });
-        });
-
-        const results = await Promise.allSettled(promises);
-        const failures = results.filter(r => r.status === 'rejected');
-
-        if (failures.length > 0) {
-            throw new Error(`${failures.length} Ergebnisse konnten nicht gespeichert werden`);
         }
     };
 
@@ -166,18 +237,9 @@ export default function InspectionWizard() {
             window.scrollTo(0, 0);
             setCurrentCategoryIndex(prev => prev + 1);
         } else {
-            // Finishing - save all results
+            // All results already auto-saved — just navigate to finish
             setIsSaving(true);
-
-            try {
-                await saveResults();
-                navigate(`/inspection/finish/${inspectionId}`);
-            } catch (err) {
-                console.error("Save failed", err);
-                showToast('Speichern fehlgeschlagen! Bitte erneut versuchen.', 'error');
-            } finally {
-                setIsSaving(false);
-            }
+            navigate(`/inspection/finish/${inspectionId}`);
         }
     };
 
@@ -190,6 +252,42 @@ export default function InspectionWizard() {
             <div className="flex flex-col items-center justify-center min-h-screen p-4">
                 <Loader2 size={48} className="animate-spin text-blue-600 mb-4" />
                 <p className="text-gray-600">Lade Checkliste...</p>
+            </div>
+        );
+    }
+
+    // Resume dialog
+    if (showResumeDialog && existingDraft) {
+        const draftDate = new Date(existingDraft.createdAt || existingDraft.date).toLocaleDateString('de-AT');
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center">
+                    <RotateCcw size={48} className="text-blue-600 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-gray-800 mb-2">Offener Entwurf</h2>
+                    <p className="text-gray-600 mb-6">
+                        Es gibt einen offenen Entwurf vom {draftDate}. Möchten Sie diesen fortsetzen oder eine neue Prüfung starten?
+                    </p>
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => resumeDraft(existingDraft.id)}
+                            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition"
+                        >
+                            Entwurf fortsetzen
+                        </button>
+                        <button
+                            onClick={createNewInspection}
+                            className="w-full bg-gray-100 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-200 transition"
+                        >
+                            Neue Prüfung starten
+                        </button>
+                        <button
+                            onClick={() => navigate('/')}
+                            className="w-full text-gray-500 py-2 hover:text-gray-700 transition"
+                        >
+                            Zurück
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
