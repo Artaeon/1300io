@@ -4,19 +4,19 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function Impressum() {
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 py-8 px-4">
             <div className="max-w-2xl mx-auto">
-                <Link to="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
+                <Link to="/" className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-6">
                     <ArrowLeft size={18} />
                     Zurück
                 </Link>
 
-                <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Impressum</h1>
+                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-8">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Impressum</h1>
 
-                    <div className="space-y-6 text-gray-700 text-sm leading-relaxed">
+                    <div className="space-y-6 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
                         <section>
-                            <h2 className="font-semibold text-gray-900 mb-2">Angaben gemäß § 5 ECG</h2>
+                            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Angaben gemäß § 5 ECG</h2>
                             <p>
                                 <strong>Stoicera GesbR</strong><br />
                                 Allerheiligen im Mühlkreis 7<br />
@@ -26,15 +26,15 @@ export default function Impressum() {
                         </section>
 
                         <section>
-                            <h2 className="font-semibold text-gray-900 mb-2">Kontakt</h2>
+                            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Kontakt</h2>
                             <p>
-                                E-Mail: <a href="mailto:office@stoicera.com" className="text-blue-600 hover:underline">office@stoicera.com</a><br />
+                                E-Mail: <a href="mailto:office@stoicera.com" className="text-blue-600 dark:text-blue-400 hover:underline">office@stoicera.com</a><br />
                                 Telefon: +43 (0) XXX XXX XXX
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="font-semibold text-gray-900 mb-2">Unternehmensgegenstand</h2>
+                            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Unternehmensgegenstand</h2>
                             <p>
                                 Entwicklung und Betrieb von Software-Lösungen für Immobilienprüfungen
                                 nach ÖNORM B 1300. Dienstleistungen im Bereich Softwareentwicklung und IT-Beratung.
@@ -42,7 +42,7 @@ export default function Impressum() {
                         </section>
 
                         <section>
-                            <h2 className="font-semibold text-gray-900 mb-2">Haftungsausschluss</h2>
+                            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Haftungsausschluss</h2>
                             <p>
                                 Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Haftung
                                 für die Inhalte externer Links. Für den Inhalt der verlinkten Seiten
@@ -51,7 +51,7 @@ export default function Impressum() {
                         </section>
 
                         <section>
-                            <h2 className="font-semibold text-gray-900 mb-2">Urheberrecht</h2>
+                            <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Urheberrecht</h2>
                             <p>
                                 Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen
                                 Seiten unterliegen dem österreichischen Urheberrecht. Die Vervielfältigung,
@@ -61,7 +61,7 @@ export default function Impressum() {
                             </p>
                         </section>
 
-                        <section className="text-xs text-gray-500 pt-4 border-t">
+                        <section className="text-xs text-gray-500 dark:text-gray-500 pt-4 border-t border-gray-100 dark:border-gray-800">
                             <p>Stand: Januar 2026</p>
                         </section>
                     </div>

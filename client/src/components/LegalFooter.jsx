@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 
 export default function LegalFooter() {
     return (
-        <footer className="text-center py-4 text-xs text-gray-400">
+        <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
             <div className="flex items-center justify-center gap-3">
-                <Link to="/impressum" className="hover:text-gray-600 hover:underline">
+                <Link to="/impressum" className="hover:text-gray-600 dark:hover:text-gray-300 hover:underline">
                     Impressum
                 </Link>
                 <span>|</span>
-                <Link to="/datenschutz" className="hover:text-gray-600 hover:underline">
+                <Link to="/datenschutz" className="hover:text-gray-600 dark:hover:text-gray-300 hover:underline">
                     Datenschutz
                 </Link>
             </div>
