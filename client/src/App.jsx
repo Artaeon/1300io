@@ -7,6 +7,7 @@ import Login from './components/Login';
 import AddProperty from './components/AddProperty';
 import EditProperty from './components/EditProperty';
 import UserManagement from './components/admin/UserManagement';
+import ChecklistManagement from './components/admin/ChecklistManagement';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -57,6 +58,9 @@ function App() {
             {/* Admin Routes */}
             <Route path="/admin/users" element={
               <AdminRoute><UserManagement /></AdminRoute>
+            } />
+            <Route path="/admin/checklist" element={
+              <AdminRoute><ChecklistManagement /></AdminRoute>
             } />
           </Routes>
         </div>
