@@ -13,6 +13,7 @@ import OrganizationManagement from './components/admin/OrganizationManagement';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
@@ -29,9 +30,10 @@ const AdminRoute = ({ children }) => {
 
 function App() {
   return (
+    <ThemeProvider>
     <Router>
       <AuthProvider>
-        <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/impressum" element={<Impressum />} />
@@ -75,6 +77,7 @@ function App() {
         </div>
       </AuthProvider>
     </Router>
+    </ThemeProvider>
   );
 }
 

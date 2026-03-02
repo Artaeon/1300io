@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2, Settings, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2, Settings, Search, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import LegalFooter from './LegalFooter';
 
 // Helper: Check if inspection is within 1 year
@@ -52,6 +53,7 @@ export default function Dashboard() {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user, logout, authFetch } = useAuth();
+    const { dark, toggleTheme } = useTheme();
     const searchTimer = useRef(null);
 
     const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -160,18 +162,21 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-24">
             {/* Header */}
-            <div className="bg-white shadow-sm sticky top-0 z-10">
+            <div className="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-xl font-bold text-gray-900">PropSecure</h1>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">PropSecure</h1>
                     <div className="flex items-center gap-2">
+                        <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400 hover:text-blue-600 p-2" title={dark ? 'Hellmodus' : 'Dunkelmodus'}>
+                            {dark ? <Sun size={22} /> : <Moon size={22} />}
+                        </button>
                         {user?.role === 'ADMIN' && (
-                            <Link to="/admin/users" className="text-gray-500 hover:text-blue-600 p-2" title="Verwaltung">
+                            <Link to="/admin/users" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 p-2" title="Verwaltung">
                                 <Settings size={22} />
                             </Link>
                         )}
-                        <button onClick={logout} className="text-gray-500 hover:text-red-500 p-2">
+                        <button onClick={logout} className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-2">
                             <LogOut size={22} />
                         </button>
                     </div>
@@ -185,18 +190,18 @@ export default function Dashboard() {
                     <section>
                         <div className="flex items-center gap-2 mb-4">
                             <Clock size={20} className="text-gray-500" />
-                            <h2 className="text-lg font-bold text-gray-900">Aktuelle Prüfungen</h2>
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Aktuelle Prüfungen</h2>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 border-b">
+                                    <thead className="bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
                                         <tr>
-                                            <th className="text-left px-4 py-3 font-semibold text-gray-600">Datum</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-gray-600">Objekt</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 hidden sm:table-cell">Prüfer</th>
-                                            <th className="text-center px-4 py-3 font-semibold text-gray-600">PDF</th>
+                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Datum</th>
+                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">Objekt</th>
+                                            <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 hidden sm:table-cell">Prüfer</th>
+                                            <th className="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-300">PDF</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -236,7 +241,7 @@ export default function Dashboard() {
                 <section>
                     <div className="flex items-center gap-2 mb-4">
                         <Building size={20} className="text-gray-500" />
-                        <h2 className="text-lg font-bold text-gray-900">Meine Objekte</h2>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-white">Meine Objekte</h2>
                         <span className="text-sm text-gray-500">({totalProperties})</span>
                     </div>
 
@@ -246,7 +251,7 @@ export default function Dashboard() {
                         <input
                             type="text"
                             placeholder="Objekte suchen..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 dark:text-white"
                             value={search}
                             onChange={(e) => handleSearchChange(e.target.value)}
                         />
@@ -254,7 +259,7 @@ export default function Dashboard() {
 
                     <div className="space-y-4">
                         {properties.map(prop => (
-                            <div key={prop.id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                            <div key={prop.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-gray-700">
                                 <div className="p-5">
                                     {/* Status Badge & Actions */}
                                     <div className="flex justify-between items-start mb-3">
@@ -351,9 +356,9 @@ export default function Dashboard() {
             {/* Delete Confirmation Dialog */}
             {deleteConfirm && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Objekt löschen?</h3>
-                        <p className="text-gray-600 mb-6">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Objekt löschen?</h3>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
                             Diese Aktion löscht das Objekt und alle zugehörigen Prüfungen unwiderruflich.
                         </p>
                         <div className="flex gap-3">
