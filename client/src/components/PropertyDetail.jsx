@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Building, MapPin, AlertTriangle, CheckCircle2, Clock, Loader2, FileText, Download } from 'lucide-react';
+import { ArrowLeft, Building, MapPin, AlertTriangle, CheckCircle2, Clock, Loader2, FileText, Download, QrCode } from 'lucide-react';
 
 export default function PropertyDetail() {
     const { id } = useParams();
@@ -11,15 +11,17 @@ export default function PropertyDetail() {
     const [property, setProperty] = useState(null);
     const [defects, setDefects] = useState([]);
     const [inspections, setInspections] = useState([]);
+    const [qrData, setQrData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [propRes, defectsRes, historyRes] = await Promise.all([
+                const [propRes, defectsRes, historyRes, qrRes] = await Promise.all([
                     authFetch(`/api/properties/${id}`),
                     authFetch(`/api/properties/${id}/defects`),
-                    authFetch(`/api/inspections/history?limit=50`)
+                    authFetch(`/api/inspections/history?limit=50`),
+                    authFetch(`/api/properties/${id}/qr`)
                 ]);
 
                 if (!propRes.ok) {
@@ -37,6 +39,10 @@ export default function PropertyDetail() {
                 if (historyRes.ok) {
                     const histData = await historyRes.json();
                     setInspections(histData.data.filter(i => i.property?.id === parseInt(id)));
+                }
+
+                if (qrRes.ok) {
+                    setQrData(await qrRes.json());
                 }
             } catch {
                 navigate('/');
@@ -115,6 +121,22 @@ export default function PropertyDetail() {
                         Neue Prüfung starten
                     </Link>
                 </div>
+
+                {/* QR Code */}
+                {qrData && (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                            <QrCode size={20} className="text-gray-500" />
+                            <h2 className="text-lg font-bold text-gray-900">QR-Code</h2>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-3">
+                            Scannen Sie den Code, um direkt eine Prüfung zu starten.
+                        </p>
+                        <div className="flex justify-center">
+                            <img src={qrData.qr} alt="QR Code" className="w-48 h-48" />
+                        </div>
+                    </div>
+                )}
 
                 {/* Defect Summary */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">

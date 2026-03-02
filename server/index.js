@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const PDFDocument = require('pdfkit');
+const QRCode = require('qrcode');
 
 const logger = require('./logger');
 const { config, validateConfig, isProduction } = require('./config');
@@ -429,6 +430,24 @@ app.get('/api/properties/:id/draft-inspection', authenticateToken, validateParam
     orderBy: { createdAt: 'desc' },
   });
   res.json(draft);
+}));
+
+// --- QR Code ---
+
+app.get('/api/properties/:id/qr', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
+  if (!property) return res.status(404).json({ error: 'Property not found' });
+
+  const baseUrl = config.frontendUrl || `${req.protocol}://${req.get('host')}`;
+  const inspectionUrl = `${baseUrl}/inspection/new/${property.id}`;
+
+  const qrDataUrl = await QRCode.toDataURL(inspectionUrl, {
+    width: 300,
+    margin: 2,
+    color: { dark: '#1e3a5f' }
+  });
+
+  res.json({ qr: qrDataUrl, url: inspectionUrl });
 }));
 
 // --- Defect Tracking ---
