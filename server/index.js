@@ -235,28 +235,42 @@ app.delete('/api/users/:id', authenticateToken, authorizeRoles('ADMIN'), validat
 // --- Properties ---
 
 app.get('/api/properties', authenticateToken, asyncHandler(async (req, res) => {
-  const properties = await prisma.property.findMany({
-    include: {
-      inspections: {
-        where: { status: 'COMPLETED' },
-        orderBy: { ended_at: 'desc' },
-        take: 1,
-        select: {
-          id: true,
-          ended_at: true,
-          inspector_name: true
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+  const search = req.query.search?.trim() || '';
+
+  const where = search ? {
+    OR: [
+      { address: { contains: search } },
+      { owner_name: { contains: search } }
+    ]
+  } : {};
+
+  const [total, properties] = await Promise.all([
+    prisma.property.count({ where }),
+    prisma.property.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        inspections: {
+          where: { status: 'COMPLETED' },
+          orderBy: { ended_at: 'desc' },
+          take: 1,
+          select: { id: true, ended_at: true, inspector_name: true }
         }
       }
-    }
-  });
+    })
+  ]);
 
-  const propertiesWithStatus = properties.map(p => ({
+  const data = properties.map(p => ({
     ...p,
     lastInspection: p.inspections[0] || null,
     inspections: undefined
   }));
 
-  res.json(propertiesWithStatus);
+  res.json({ data, total, page, limit, totalPages: Math.ceil(total / limit) });
 }));
 
 app.post('/api/properties', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'), validateBody(createPropertySchema), asyncHandler(async (req, res) => {
@@ -326,17 +340,25 @@ app.get('/api/properties/:id/draft-inspection', authenticateToken, validateParam
 // --- Inspections ---
 
 app.get('/api/inspections/history', authenticateToken, asyncHandler(async (req, res) => {
-  const inspections = await prisma.inspection.findMany({
-    where: { status: 'COMPLETED' },
-    orderBy: { ended_at: 'desc' },
-    take: 10,
-    include: {
-      property: {
-        select: { id: true, address: true }
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+
+  const where = { status: 'COMPLETED' };
+
+  const [total, inspections] = await Promise.all([
+    prisma.inspection.count({ where }),
+    prisma.inspection.findMany({
+      where,
+      orderBy: { ended_at: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        property: { select: { id: true, address: true } }
       }
-    }
-  });
-  res.json(inspections);
+    })
+  ]);
+
+  res.json({ data: inspections, total, page, limit, totalPages: Math.ceil(total / limit) });
 }));
 
 app.post('/api/inspections', authenticateToken, authorizeRoles('ADMIN', 'MANAGER', 'INSPECTOR'), validateBody(createInspectionSchema), asyncHandler(async (req, res) => {

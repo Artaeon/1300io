@@ -252,13 +252,26 @@ describe('Properties', () => {
     expect(res.status).toBe(403);
   });
 
-  it('GET /api/properties should return all properties', async () => {
+  it('GET /api/properties should return paginated properties', async () => {
     const res = await request(app)
       .get('/api/properties')
       .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body.data).toBeDefined();
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.body.total).toBeGreaterThan(0);
+    expect(res.body.page).toBe(1);
+    expect(res.body.totalPages).toBeGreaterThan(0);
+  });
+
+  it('GET /api/properties?search= should filter by address', async () => {
+    const res = await request(app)
+      .get('/api/properties?search=nonexistent-address-xyz')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.length).toBe(0);
+    expect(res.body.total).toBe(0);
   });
 
   it('GET /api/properties/:id should return a specific property', async () => {
@@ -507,13 +520,15 @@ describe('Inspections', () => {
     expect(res.status).toBe(400);
   });
 
-  it('GET /api/inspections/history should return completed inspections', async () => {
+  it('GET /api/inspections/history should return paginated completed inspections', async () => {
     const res = await request(app)
       .get('/api/inspections/history')
       .set('Authorization', `Bearer ${authToken}`);
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body.data).toBeDefined();
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.body.total).toBeGreaterThan(0);
   });
 });
 
