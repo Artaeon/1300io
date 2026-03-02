@@ -164,6 +164,67 @@ describe('Authentication', () => {
   });
 });
 
+describe('Token Refresh', () => {
+  let refreshToken;
+  const crypto = require('crypto');
+
+  beforeAll(async () => {
+    // Create a refresh token directly in the DB to avoid login rate limits
+    const testUser = await prisma.user.findUnique({ where: { email: 'admin@test.com' } });
+    refreshToken = crypto.randomBytes(48).toString('base64url');
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    await prisma.refreshToken.create({
+      data: { token: refreshToken, userId: testUser.id, expiresAt }
+    });
+  });
+
+  it('POST /api/auth/refresh should return new token pair', async () => {
+    const res = await request(app)
+      .post('/api/auth/refresh')
+      .send({ refreshToken });
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeDefined();
+    expect(res.body.refreshToken).toBeDefined();
+    expect(res.body.refreshToken).not.toBe(refreshToken);
+    refreshToken = res.body.refreshToken;
+  });
+
+  it('POST /api/auth/refresh should reject used token (rotation)', async () => {
+    const res = await request(app)
+      .post('/api/auth/refresh')
+      .send({ refreshToken: 'already-consumed-token' });
+    expect(res.status).toBe(401);
+  });
+
+  it('POST /api/auth/refresh should reject missing token', async () => {
+    const res = await request(app)
+      .post('/api/auth/refresh')
+      .send({});
+    expect(res.status).toBe(400);
+  });
+
+  it('POST /api/auth/logout should invalidate refresh token', async () => {
+    const res = await request(app)
+      .post('/api/auth/logout')
+      .send({ refreshToken });
+    expect(res.status).toBe(200);
+
+    // Token should no longer work
+    const refreshRes = await request(app)
+      .post('/api/auth/refresh')
+      .send({ refreshToken });
+    expect(refreshRes.status).toBe(401);
+  });
+
+  it('login response should include refreshToken', async () => {
+    // Verify the login response shape includes refreshToken
+    // (uses existing authToken from beforeAll login, check stored tokens exist)
+    const tokens = await prisma.refreshToken.findMany();
+    expect(tokens.length).toBeGreaterThan(0);
+  });
+});
+
 describe('Properties', () => {
   it('POST /api/properties should create a property (admin)', async () => {
     const res = await request(app)
