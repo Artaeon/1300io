@@ -23,7 +23,7 @@ export default function InspectionWizard() {
     const { propertyId } = useParams();
     const navigate = useNavigate();
 
-    const { token, user } = useAuth();
+    const { user, authFetch } = useAuth();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
@@ -51,12 +51,9 @@ export default function InspectionWizard() {
     const saveResult = useCallback(async (inspId, itemId, answer) => {
         if (!inspId || !answer.status) return;
         try {
-            await fetch(`/api/inspections/${inspId}/results`, {
+            await authFetch(`/api/inspections/${inspId}/results`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     checklistItemId: parseInt(itemId),
                     status: answer.status,
@@ -67,16 +64,14 @@ export default function InspectionWizard() {
         } catch {
             showToast('Speichern fehlgeschlagen', 'error');
         }
-    }, [token, showToast]);
+    }, [authFetch, showToast]);
 
     // Resume a draft — load existing results into answers state
     const resumeDraft = useCallback(async (draftId) => {
         setInspectionId(draftId);
         setShowResumeDialog(false);
         try {
-            const res = await fetch(`/api/inspections/${draftId}/results`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const res = await authFetch(`/api/inspections/${draftId}/results`);
             if (!res.ok) throw new Error('Failed to load results');
             const results = await res.json();
             const restored = {};
@@ -92,18 +87,15 @@ export default function InspectionWizard() {
         } catch {
             showToast('Entwurf konnte nicht geladen werden', 'error');
         }
-    }, [token, showToast]);
+    }, [authFetch, showToast]);
 
     // Create a new inspection
     const createNewInspection = useCallback(async () => {
         setShowResumeDialog(false);
         try {
-            const res = await fetch('/api/inspections', {
+            const res = await authFetch('/api/inspections', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     propertyId,
                     inspectorName: user?.name || 'Inspector'
@@ -115,26 +107,20 @@ export default function InspectionWizard() {
         } catch {
             showToast('Prüfung konnte nicht erstellt werden!', 'error');
         }
-    }, [token, propertyId, user?.name, showToast]);
+    }, [authFetch, propertyId, user?.name, showToast]);
 
     // Initialize — check for draft, load checklist
     useEffect(() => {
-        if (!token) return;
-
         const init = async () => {
             try {
                 // Fetch checklist
-                const catRes = await fetch('/api/checklist/categories', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const catRes = await authFetch('/api/checklist/categories');
                 if (!catRes.ok) throw new Error('Failed to load checklist');
                 const catData = await catRes.json();
                 setCategories(catData);
 
                 // Check for existing draft
-                const draftRes = await fetch(`/api/properties/${propertyId}/draft-inspection`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const draftRes = await authFetch(`/api/properties/${propertyId}/draft-inspection`);
                 const draft = await draftRes.json();
 
                 if (draft) {
@@ -150,7 +136,7 @@ export default function InspectionWizard() {
             }
         };
         init();
-    }, [propertyId, token, showToast, createNewInspection]);
+    }, [propertyId, authFetch, showToast, createNewInspection]);
 
     // Auto-save on status change
     const handleStatusChange = useCallback((itemId, status) => {
@@ -204,9 +190,8 @@ export default function InspectionWizard() {
         formData.append('photo', file);
 
         try {
-            const res = await fetch('/api/upload', {
+            const res = await authFetch('/api/upload', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 

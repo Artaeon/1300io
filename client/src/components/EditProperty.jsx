@@ -5,7 +5,7 @@ import { ArrowLeft, Building, User, Layers, Loader2 } from 'lucide-react';
 
 export default function EditProperty() {
     const { id } = useParams();
-    const { token } = useAuth();
+    const { authFetch } = useAuth();
     const navigate = useNavigate();
 
     const [address, setAddress] = useState('');
@@ -16,10 +16,7 @@ export default function EditProperty() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (!token) return;
-        fetch(`/api/properties/${id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
+        authFetch(`/api/properties/${id}`)
             .then(res => {
                 if (!res.ok) throw new Error('Not found');
                 return res.json();
@@ -34,19 +31,16 @@ export default function EditProperty() {
                 setError('Immobilie nicht gefunden');
                 setLoading(false);
             });
-    }, [id, token]);
+    }, [id, authFetch]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
         setError('');
         try {
-            const res = await fetch(`/api/properties/${id}`, {
+            const res = await authFetch(`/api/properties/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ address, owner_name: ownerName, units_count: unitsCount })
             });
             if (res.ok) {

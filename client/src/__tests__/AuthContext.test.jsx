@@ -61,6 +61,7 @@ describe('AuthContext', () => {
       ok: true,
       json: () => Promise.resolve({
         token: 'new-token',
+        refreshToken: 'new-refresh-token',
         user: { id: 1, email: 'test@test.com', name: 'Test', role: 'ADMIN' }
       }),
     });
@@ -77,6 +78,7 @@ describe('AuthContext', () => {
 
     expect(screen.getByTestId('token').textContent).toBe('new-token');
     expect(localStorage.getItem('token')).toBe('new-token');
+    expect(localStorage.getItem('refreshToken')).toBe('new-refresh-token');
   });
 
   it('should not set token on failed login', async () => {

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function InspectionFinish() {
     const { id } = useParams();
-    const { token } = useAuth();
+    const { authFetch } = useAuth();
     const [isCompleting, setIsCompleting] = useState(true);
     const [isDownloading, setIsDownloading] = useState(false);
     const [inspection, setInspection] = useState(null);
@@ -15,9 +15,8 @@ export default function InspectionFinish() {
     useEffect(() => {
         const completeInspection = async () => {
             try {
-                const response = await fetch(`/api/inspections/${id}/complete`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await authFetch(`/api/inspections/${id}/complete`, {
+                    method: 'POST'
                 });
 
                 if (!response.ok) throw new Error('Failed to complete inspection');
@@ -33,14 +32,12 @@ export default function InspectionFinish() {
         };
 
         completeInspection();
-    }, [id, token]);
+    }, [id, authFetch]);
 
     const handleDownloadPDF = useCallback(async () => {
         setIsDownloading(true);
         try {
-            const response = await fetch(`/api/inspections/${id}/pdf`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await authFetch(`/api/inspections/${id}/pdf`);
 
             if (!response.ok) throw new Error('PDF generation failed');
 
@@ -70,7 +67,7 @@ export default function InspectionFinish() {
         } finally {
             setIsDownloading(false);
         }
-    }, [id, token]);
+    }, [id, authFetch]);
 
     if (isCompleting) {
         return (

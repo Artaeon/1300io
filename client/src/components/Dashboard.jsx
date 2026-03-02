@@ -47,7 +47,7 @@ export default function Dashboard() {
     const [properties, setProperties] = useState([]);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { token, logout } = useAuth();
+    const { logout, authFetch } = useAuth();
 
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -55,9 +55,8 @@ export default function Dashboard() {
     const handleDeleteProperty = useCallback(async (propertyId) => {
         setDeleting(true);
         try {
-            const res = await fetch(`/api/properties/${propertyId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await authFetch(`/api/properties/${propertyId}`, {
+                method: 'DELETE'
             });
             if (res.ok) {
                 setProperties(prev => prev.filter(p => p.id !== propertyId));
@@ -71,14 +70,12 @@ export default function Dashboard() {
             setDeleting(false);
             setDeleteConfirm(null);
         }
-    }, [token]);
+    }, [authFetch]);
 
     // PDF Download helper
     const handleDownloadPDF = useCallback(async (inspectionId) => {
         try {
-            const response = await fetch(`/api/inspections/${inspectionId}/pdf`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await authFetch(`/api/inspections/${inspectionId}/pdf`);
             if (!response.ok) throw new Error('PDF generation failed');
 
             const blob = await response.blob();
@@ -95,23 +92,19 @@ export default function Dashboard() {
             console.error('PDF download failed:', err);
             alert('PDF Download fehlgeschlagen.');
         }
-    }, [token]);
+    }, [authFetch]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 // Fetch properties
-                const propsRes = await fetch('/api/properties', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const propsRes = await authFetch('/api/properties');
                 if (propsRes.status === 401) { logout(); return; }
                 const propsData = await propsRes.json();
                 setProperties(propsData);
 
                 // Fetch history
-                const histRes = await fetch('/api/inspections/history', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const histRes = await authFetch('/api/inspections/history');
                 if (histRes.ok) {
                     const histData = await histRes.json();
                     setHistory(histData);
@@ -123,7 +116,7 @@ export default function Dashboard() {
             }
         };
         fetchData();
-    }, [token, logout]);
+    }, [authFetch, logout]);
 
     if (loading) {
         return (

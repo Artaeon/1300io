@@ -7,18 +7,15 @@ export default function AddProperty() {
     const [address, setAddress] = useState('');
     const [ownerName, setOwnerName] = useState('');
     const [unitsCount, setUnitsCount] = useState('');
-    const { token } = useAuth();
+    const { authFetch } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('/api/properties', {
+            const res = await authFetch('/api/properties', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ address, owner_name: ownerName, units_count: unitsCount })
             });
             if (res.ok) {
