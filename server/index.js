@@ -716,6 +716,55 @@ app.post('/api/upload', authenticateToken, uploadLimiter, upload.single('photo')
   res.json({ url: publicUrl });
 });
 
+// --- CSV Export ---
+
+app.get('/api/inspections/:id/export/csv', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const inspection = await prisma.inspection.findUnique({
+    where: { id: req.validatedParams.id },
+    include: {
+      property: true,
+      results: {
+        include: {
+          checklist_item: { include: { category: true } }
+        }
+      }
+    }
+  });
+
+  if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+
+  // Build CSV
+  const escapeCSV = (val) => {
+    if (val == null) return '';
+    const str = String(val);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
+  const rows = [
+    ['Kategorie', 'Pruefpunkt', 'Status', 'Kommentar', 'Foto-URL'].join(',')
+  ];
+
+  inspection.results.forEach(r => {
+    const status = r.status === 'OK' ? 'OK' : r.status === 'DEFECT' ? 'Mangel' : 'N/A';
+    rows.push([
+      escapeCSV(r.checklist_item?.category?.name),
+      escapeCSV(r.checklist_item?.text),
+      status,
+      escapeCSV(r.comment),
+      escapeCSV(r.photo_url)
+    ].join(','));
+  });
+
+  const csv = rows.join('\n');
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename=Pruefbericht-${inspection.id}.csv`);
+  res.send('\uFEFF' + csv); // BOM for Excel compatibility
+}));
+
 // --- PDF Report ---
 
 app.get('/api/inspections/:id/pdf', authenticateToken, pdfLimiter, validateParams(idParamSchema), asyncHandler(async (req, res) => {
