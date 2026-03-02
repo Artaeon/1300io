@@ -840,6 +840,94 @@ describe('User Management', () => {
   });
 });
 
+// ==================== Organization Management ====================
+describe('Organization Management', () => {
+  let testOrgId;
+
+  it('POST /api/organizations should create an organization (admin)', async () => {
+    const res = await request(app)
+      .post('/api/organizations')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'Test Hausverwaltung GmbH' });
+    expect(res.status).toBe(201);
+    expect(res.body.name).toBe('Test Hausverwaltung GmbH');
+    testOrgId = res.body.id;
+  });
+
+  it('GET /api/organizations should list organizations (admin)', async () => {
+    const res = await request(app)
+      .get('/api/organizations')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0]._count).toBeDefined();
+  });
+
+  it('GET /api/organizations should be denied for non-admin', async () => {
+    const res = await request(app)
+      .get('/api/organizations')
+      .set('Authorization', `Bearer ${readonlyToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('PUT /api/organizations/:id should update an organization', async () => {
+    const res = await request(app)
+      .put(`/api/organizations/${testOrgId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'Updated Hausverwaltung' });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('Updated Hausverwaltung');
+  });
+
+  it('PUT /api/organizations/:id should return 404 for nonexistent', async () => {
+    const res = await request(app)
+      .put('/api/organizations/99999')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'Ghost' });
+    expect(res.status).toBe(404);
+  });
+
+  it('PUT /api/organizations/:id/users/:userId should assign user', async () => {
+    const users = await prisma.user.findMany({ where: { email: 'readonly@test.com' } });
+    const res = await request(app)
+      .put(`/api/organizations/${testOrgId}/users/${users[0].id}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+
+    const updatedUser = await prisma.user.findUnique({ where: { id: users[0].id } });
+    expect(updatedUser.organizationId).toBe(testOrgId);
+  });
+
+  it('DELETE /api/organizations/:id/users/:userId should remove user', async () => {
+    const users = await prisma.user.findMany({ where: { email: 'readonly@test.com' } });
+    const res = await request(app)
+      .delete(`/api/organizations/${testOrgId}/users/${users[0].id}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+
+    const updatedUser = await prisma.user.findUnique({ where: { id: users[0].id } });
+    expect(updatedUser.organizationId).toBeNull();
+  });
+
+  it('DELETE /api/organizations/:id should delete and unlink members', async () => {
+    const res = await request(app)
+      .delete(`/api/organizations/${testOrgId}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+
+    const org = await prisma.organization.findUnique({ where: { id: testOrgId } });
+    expect(org).toBeNull();
+  });
+
+  it('DELETE /api/organizations/:id should return 404 for nonexistent', async () => {
+    const res = await request(app)
+      .delete('/api/organizations/99999')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(404);
+  });
+});
+
 // ==================== Audit Logging ====================
 describe('Audit Logging', () => {
   it('should create audit log entry when property is created', async () => {
