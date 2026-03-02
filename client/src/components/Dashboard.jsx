@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2, Settings } from 'lucide-react';
+import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2, Settings, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LegalFooter from './LegalFooter';
 
@@ -45,9 +45,14 @@ const InspectionStatusBadge = ({ lastInspection }) => {
 
 export default function Dashboard() {
     const [properties, setProperties] = useState([]);
+    const [totalProperties, setTotalProperties] = useState(0);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [search, setSearch] = useState('');
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user, logout, authFetch } = useAuth();
+    const searchTimer = useRef(null);
 
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -60,6 +65,7 @@ export default function Dashboard() {
             });
             if (res.ok) {
                 setProperties(prev => prev.filter(p => p.id !== propertyId));
+                setTotalProperties(prev => prev - 1);
             } else {
                 const data = await res.json();
                 alert(data.error || 'Löschen fehlgeschlagen');
@@ -94,20 +100,31 @@ export default function Dashboard() {
         }
     }, [authFetch]);
 
+    const fetchProperties = useCallback(async (currentPage, searchTerm) => {
+        try {
+            const params = new URLSearchParams({ page: currentPage, limit: 20 });
+            if (searchTerm) params.set('search', searchTerm);
+            const propsRes = await authFetch(`/api/properties?${params}`);
+            if (propsRes.status === 401) { logout(); return; }
+            const result = await propsRes.json();
+            setProperties(result.data);
+            setTotalProperties(result.total);
+            setTotalPages(result.totalPages);
+        } catch (err) {
+            console.error("Failed to fetch properties", err);
+        }
+    }, [authFetch, logout]);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch properties
-                const propsRes = await authFetch('/api/properties');
-                if (propsRes.status === 401) { logout(); return; }
-                const propsData = await propsRes.json();
-                setProperties(propsData);
+                await fetchProperties(1, '');
 
                 // Fetch history
-                const histRes = await authFetch('/api/inspections/history');
+                const histRes = await authFetch('/api/inspections/history?limit=5');
                 if (histRes.ok) {
                     const histData = await histRes.json();
-                    setHistory(histData);
+                    setHistory(histData.data);
                 }
             } catch (err) {
                 console.error("Failed to fetch data", err);
@@ -116,7 +133,23 @@ export default function Dashboard() {
             }
         };
         fetchData();
-    }, [authFetch, logout]);
+    }, [authFetch, fetchProperties]);
+
+    // Debounced search
+    const handleSearchChange = (value) => {
+        setSearch(value);
+        if (searchTimer.current) clearTimeout(searchTimer.current);
+        searchTimer.current = setTimeout(() => {
+            setPage(1);
+            fetchProperties(1, value);
+        }, 400);
+    };
+
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+        fetchProperties(newPage, search);
+        window.scrollTo(0, 0);
+    };
 
     if (loading) {
         return (
@@ -167,7 +200,7 @@ export default function Dashboard() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {history.slice(0, 5).map(insp => (
+                                        {history.map(insp => (
                                             <tr key={insp.id} className="hover:bg-gray-50">
                                                 <td className="px-4 py-3 whitespace-nowrap">
                                                     {insp.ended_at
@@ -204,7 +237,19 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2 mb-4">
                         <Building size={20} className="text-gray-500" />
                         <h2 className="text-lg font-bold text-gray-900">Meine Objekte</h2>
-                        <span className="text-sm text-gray-500">({properties.length})</span>
+                        <span className="text-sm text-gray-500">({totalProperties})</span>
+                    </div>
+
+                    {/* Search */}
+                    <div className="relative mb-4">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Objekte suchen..."
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                            value={search}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                        />
                     </div>
 
                     <div className="space-y-4">
@@ -262,13 +307,42 @@ export default function Dashboard() {
                         {properties.length === 0 && (
                             <div className="text-center py-12 text-gray-500">
                                 <Building size={48} className="mx-auto mb-4 opacity-30" />
-                                <p>Noch keine Objekte vorhanden.</p>
-                                <Link to="/properties/new" className="text-blue-600 font-medium mt-2 inline-block">
-                                    + Erstes Objekt hinzufügen
-                                </Link>
+                                {search ? (
+                                    <p>Keine Objekte gefunden für &ldquo;{search}&rdquo;</p>
+                                ) : (
+                                    <>
+                                        <p>Noch keine Objekte vorhanden.</p>
+                                        <Link to="/properties/new" className="text-blue-600 font-medium mt-2 inline-block">
+                                            + Erstes Objekt hinzufügen
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-4 mt-6">
+                            <button
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page <= 1}
+                                className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span className="text-sm text-gray-600">
+                                Seite {page} von {totalPages}
+                            </span>
+                            <button
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={page >= totalPages}
+                                className="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    )}
                 </section>
             </div>
 
