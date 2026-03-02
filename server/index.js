@@ -9,6 +9,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const PDFDocument = require('pdfkit');
 
+const logger = require('./logger');
 const { config, validateConfig, isProduction } = require('./config');
 const { asyncHandler, errorHandler } = require('./middleware/errorHandler');
 const {
@@ -312,7 +313,7 @@ app.post('/api/inspections/:id/complete', authenticateToken, authorizeRoles('ADM
     include: { property: true }
   });
 
-  console.log(`[Inspection] Marked inspection #${inspectionId} as COMPLETED`);
+  logger.info('Inspection completed', { inspectionId });
   res.json(inspection);
 }));
 
@@ -559,7 +560,7 @@ app.get('/api/inspections/:id/pdf', authenticateToken, pdfLimiter, validateParam
               .text('Foto des Mangels', 50, defectY);
             defectY += 15;
           } catch (imgError) {
-            console.error(`[PDF] Error embedding image: ${imgError.message}`);
+            logger.error('Error embedding image in PDF', { inspectionId: inspection.id, error: imgError.message });
             doc.fontSize(10).fillColor('#999')
               .text('[Bild konnte nicht geladen werden]', 50, defectY);
             defectY += 15;
@@ -593,7 +594,7 @@ app.get('/api/inspections/:id/pdf', authenticateToken, pdfLimiter, validateParam
     .text(`Generiert am ${new Date().toLocaleString('de-AT')} | 1300.io v1.0`, 50, 750, { align: 'center' });
 
   doc.end();
-  console.log(`[PDF] Report generated for Inspection #${inspection.id}`);
+  logger.info('PDF report generated', { inspectionId: inspection.id });
 }));
 
 // --- Error handler (must be last) ---
@@ -601,7 +602,7 @@ app.use(errorHandler);
 
 // --- Start server ---
 app.listen(config.port, () => {
-  console.log(`1300.io API running on port ${config.port} (${config.nodeEnv})`);
+  logger.info(`1300.io API running on port ${config.port} (${config.nodeEnv})`);
 });
 
 module.exports = app;

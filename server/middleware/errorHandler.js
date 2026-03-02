@@ -1,4 +1,5 @@
 const { isProduction } = require('../config');
+const logger = require('../logger');
 
 // Wrap async route handlers to catch unhandled rejections
 function asyncHandler(fn) {
@@ -9,10 +10,10 @@ function asyncHandler(fn) {
 
 // Centralized error handler -- must be registered last in the middleware chain
 function errorHandler(err, req, res, _next) {
-  console.error(`[Error] ${req.method} ${req.path}:`, err.message);
+  logger.error(`${req.method} ${req.path}: ${err.message}`);
 
   if (!isProduction) {
-    console.error(err.stack);
+    logger.debug('Stack trace', { stack: err.stack });
   }
 
   // Multer file size error

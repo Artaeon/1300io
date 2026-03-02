@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const logger = require('./logger');
 const prisma = new PrismaClient();
 
 async function createAuditEntry({ action, entityType, entityId, userId, ipAddress, userAgent, previousData, newData }) {
@@ -17,7 +18,7 @@ async function createAuditEntry({ action, entityType, entityId, userId, ipAddres
     });
   } catch (error) {
     // Audit logging should never break the main operation
-    console.error('[Audit] Failed to create audit entry:', error.message);
+    logger.error('Failed to create audit entry', { error: error.message });
   }
 }
 
