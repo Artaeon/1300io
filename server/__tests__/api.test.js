@@ -529,6 +529,71 @@ describe('Checklist', () => {
   });
 });
 
+describe('Checklist Management', () => {
+  let testCategoryId;
+  let testItemId;
+
+  it('POST /api/checklist/categories should create a category', async () => {
+    const res = await request(app)
+      .post('/api/checklist/categories')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'New Test Category', sort_order: 99 });
+    expect(res.status).toBe(201);
+    expect(res.body.name).toBe('New Test Category');
+    testCategoryId = res.body.id;
+  });
+
+  it('PUT /api/checklist/categories/:id should update a category', async () => {
+    const res = await request(app)
+      .put(`/api/checklist/categories/${testCategoryId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ name: 'Updated Category' });
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('Updated Category');
+  });
+
+  it('POST /api/checklist/items should create an item', async () => {
+    const res = await request(app)
+      .post('/api/checklist/items')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ text: 'New Test Item', category_id: testCategoryId, sort_order: 0 });
+    expect(res.status).toBe(201);
+    expect(res.body.text).toBe('New Test Item');
+    testItemId = res.body.id;
+  });
+
+  it('PUT /api/checklist/items/:id should update an item', async () => {
+    const res = await request(app)
+      .put(`/api/checklist/items/${testItemId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ text: 'Updated Item Text' });
+    expect(res.status).toBe(200);
+    expect(res.body.text).toBe('Updated Item Text');
+  });
+
+  it('DELETE /api/checklist/items/:id should delete an item', async () => {
+    const res = await request(app)
+      .delete(`/api/checklist/items/${testItemId}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('DELETE /api/checklist/categories/:id should delete a category', async () => {
+    const res = await request(app)
+      .delete(`/api/checklist/categories/${testCategoryId}`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('checklist CRUD should be denied for readonly users', async () => {
+    const res = await request(app)
+      .post('/api/checklist/categories')
+      .set('Authorization', `Bearer ${readonlyToken}`)
+      .send({ name: 'Unauthorized' });
+    expect(res.status).toBe(403);
+  });
+});
+
 describe('PDF Report', () => {
   it('GET /api/inspections/:id/pdf should require authentication', async () => {
     const res = await request(app)
