@@ -532,6 +532,103 @@ describe('Inspections', () => {
   });
 });
 
+describe('Defect Tracking', () => {
+  let defectPropertyId;
+  let defectInspectionId;
+  let defectItemId;
+
+  beforeAll(async () => {
+    // Create a dedicated property for defect tests
+    const propRes = await request(app)
+      .post('/api/properties')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ address: 'Defect-Str 1', owner_name: 'Defect GmbH', units_count: 5 });
+    defectPropertyId = propRes.body.id;
+
+    // Get a checklist item id
+    const categories = await prisma.checklistCategory.findMany({ include: { items: true } });
+    defectItemId = categories[0].items[0].id;
+
+    // Create an inspection
+    const inspRes = await request(app)
+      .post('/api/inspections')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ propertyId: defectPropertyId, inspectorName: 'Defect Tester' });
+    defectInspectionId = inspRes.body.id;
+  });
+
+  it('should auto-create DefectTracking when DEFECT result is saved', async () => {
+    await request(app)
+      .post(`/api/inspections/${defectInspectionId}/results`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ checklistItemId: defectItemId, status: 'DEFECT', comment: 'Riss in Wand' });
+
+    const defects = await prisma.defectTracking.findMany({
+      where: { property_id: defectPropertyId, checklist_item_id: defectItemId }
+    });
+    expect(defects.length).toBe(1);
+    expect(defects[0].status).toBe('OPEN');
+  });
+
+  it('should not duplicate DefectTracking for same item', async () => {
+    // Save DEFECT again for same item (update)
+    await request(app)
+      .post(`/api/inspections/${defectInspectionId}/results`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ checklistItemId: defectItemId, status: 'DEFECT', comment: 'Noch da' });
+
+    const defects = await prisma.defectTracking.findMany({
+      where: { property_id: defectPropertyId, checklist_item_id: defectItemId, status: 'OPEN' }
+    });
+    expect(defects.length).toBe(1);
+  });
+
+  it('should auto-resolve DefectTracking when OK result is saved', async () => {
+    // Complete the first inspection
+    await request(app)
+      .post(`/api/inspections/${defectInspectionId}/complete`)
+      .set('Authorization', `Bearer ${authToken}`);
+
+    // Create a new inspection
+    const inspRes = await request(app)
+      .post('/api/inspections')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ propertyId: defectPropertyId, inspectorName: 'Resolve Tester' });
+    const newInspId = inspRes.body.id;
+
+    // Save OK result for the same item
+    await request(app)
+      .post(`/api/inspections/${newInspId}/results`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({ checklistItemId: defectItemId, status: 'OK' });
+
+    const defects = await prisma.defectTracking.findMany({
+      where: { property_id: defectPropertyId, checklist_item_id: defectItemId }
+    });
+    const resolved = defects.find(d => d.status === 'RESOLVED');
+    expect(resolved).toBeTruthy();
+    expect(resolved.resolved_result_id).toBeTruthy();
+  });
+
+  it('GET /api/properties/:id/defects should return defects list', async () => {
+    const res = await request(app)
+      .get(`/api/properties/${defectPropertyId}/defects`)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].checklist_item).toBeDefined();
+    expect(res.body[0].first_found_result).toBeDefined();
+  });
+
+  it('GET /api/properties/:id/defects should return 404 for nonexistent property', async () => {
+    const res = await request(app)
+      .get('/api/properties/99999/defects')
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(res.status).toBe(404);
+  });
+});
+
 describe('Checklist', () => {
   it('GET /api/checklist/categories should return categories with items', async () => {
     const res = await request(app)
