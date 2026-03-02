@@ -37,6 +37,22 @@ const inspectionResultSchema = z.object({
   photoUrl: z.string().max(500).optional().nullable(),
 });
 
+const VALID_ROLES = ['ADMIN', 'MANAGER', 'INSPECTOR', 'READONLY'];
+
+const createUserSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  name: z.string().min(1, 'Name is required').max(200),
+  role: z.enum(VALID_ROLES, { errorMap: () => ({ message: `Role must be one of: ${VALID_ROLES.join(', ')}` }) }),
+});
+
+const updateUserSchema = z.object({
+  email: z.string().email().optional(),
+  password: z.string().min(8).optional(),
+  name: z.string().min(1).max(200).optional(),
+  role: z.enum(VALID_ROLES).optional(),
+}).refine(data => Object.keys(data).length > 0, { message: 'At least one field required' });
+
 const idParamSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
@@ -73,6 +89,8 @@ module.exports = {
   updatePropertySchema,
   createInspectionSchema,
   inspectionResultSchema,
+  createUserSchema,
+  updateUserSchema,
   idParamSchema,
   validateBody,
   validateParams,
