@@ -204,6 +204,15 @@ app.get('/api/properties/:id', authenticateToken, validateParams(idParamSchema),
   res.json(property);
 }));
 
+// Check for existing draft inspection for a property
+app.get('/api/properties/:id/draft-inspection', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const draft = await prisma.inspection.findFirst({
+    where: { property_id: req.validatedParams.id, status: 'DRAFT' },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(draft);
+}));
+
 // --- Inspections ---
 
 app.get('/api/inspections/history', authenticateToken, asyncHandler(async (req, res) => {
@@ -245,6 +254,17 @@ app.get('/api/inspections/:id', authenticateToken, validateParams(idParamSchema)
   });
   if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
   res.json(inspection);
+}));
+
+// Get results for an inspection (for draft resume)
+app.get('/api/inspections/:id/results', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const inspection = await prisma.inspection.findUnique({ where: { id: req.validatedParams.id } });
+  if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+
+  const results = await prisma.inspectionResult.findMany({
+    where: { inspection_id: req.validatedParams.id }
+  });
+  res.json(results);
 }));
 
 // Save single result
