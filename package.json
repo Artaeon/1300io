@@ -1,0 +1,21 @@
+{
+  "name": "1300io",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Open-source SaaS for Austrian property safety inspections (ONORM B 1300)",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "test": "cd server && npm test && cd ../client && npm test",
+    "test:server": "cd server && npm test",
+    "test:client": "cd client && npm test",
+    "lint": "cd client && npm run lint",
+    "build": "cd client && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Artaeon/1300io.git"
+  },
+  "author": "Stoicera GesbR",
+  "license": "MIT"
+}
