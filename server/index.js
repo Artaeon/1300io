@@ -14,6 +14,7 @@ const { config, validateConfig, isProduction } = require('./config');
 const { asyncHandler, errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { requestId } = require('./middleware/requestId');
 const { enforceHttps, securityHeaders } = require('./middleware/security');
+const { originCheck } = require('./middleware/originCheck');
 const { createAuditEntry, getAuditContext } = require('./audit');
 const bcrypt = require('bcryptjs');
 const {
@@ -60,7 +61,13 @@ app.disable('x-powered-by');
 app.use(cors({
   origin: isProduction ? config.frontendUrl : true,
   credentials: true,
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'X-Request-Id'],
+  exposedHeaders: ['X-Request-Id'],
+  maxAge: 86400,
 }));
+
+app.use(originCheck);
 
 // Global rate limit
 const globalLimiter = rateLimit({
