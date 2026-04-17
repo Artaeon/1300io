@@ -15,6 +15,7 @@ const { asyncHandler, errorHandler, notFoundHandler } = require('./middleware/er
 const { requestId } = require('./middleware/requestId');
 const { enforceHttps, securityHeaders } = require('./middleware/security');
 const { originCheck } = require('./middleware/originCheck');
+const sentry = require('./observability/sentry');
 const { createAuditEntry, getAuditContext } = require('./audit');
 const bcrypt = require('bcryptjs');
 const {
@@ -40,6 +41,9 @@ validateConfig();
 
 const app = express();
 const prisma = new PrismaClient();
+
+// Must run before any other middleware so Sentry can wrap requests.
+sentry.init(app);
 
 // Ensure uploads directory exists
 const uploadDir = path.resolve(config.uploadDir);
@@ -1061,6 +1065,11 @@ app.get('/api/inspections/:id/pdf', authenticateToken, pdfLimiter, validateParam
 
 // --- 404 catch-all (must come after all routes, before errorHandler) ---
 app.use(notFoundHandler);
+
+// Sentry's Express error handler runs before our own so exceptions are
+// captured before we format the client response. No-op when Sentry is
+// not configured.
+app.use(sentry.errorHandler());
 
 // --- Error handler (must be last) ---
 app.use(errorHandler);
