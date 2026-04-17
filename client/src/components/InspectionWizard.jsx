@@ -570,13 +570,31 @@ export default function InspectionWizard() {
                                         </div>
                                     )}
 
-                                    <textarea
-                                        placeholder="Beschreibung des Mangels..."
-                                        className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                                        rows={3}
-                                        value={answer.comment || ''}
-                                        onChange={(e) => handleDefectUpdate(item.id, 'comment', e.target.value)}
-                                    />
+                                    <div>
+                                        <label htmlFor={`comment-${item.id}`} className="sr-only">
+                                            Beschreibung des Mangels
+                                        </label>
+                                        <textarea
+                                            id={`comment-${item.id}`}
+                                            placeholder="Beschreibung des Mangels..."
+                                            className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                            rows={3}
+                                            maxLength={2000}
+                                            value={answer.comment || ''}
+                                            onChange={(e) => handleDefectUpdate(item.id, 'comment', e.target.value)}
+                                            aria-describedby={`comment-${item.id}-count`}
+                                        />
+                                        <div
+                                            id={`comment-${item.id}-count`}
+                                            className={`text-right text-xs mt-1 ${
+                                                (answer.comment?.length ?? 0) > 1800
+                                                    ? 'text-orange-600 dark:text-orange-400'
+                                                    : 'text-gray-400 dark:text-gray-500'
+                                            }`}
+                                        >
+                                            {(answer.comment?.length ?? 0)} / 2000
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
