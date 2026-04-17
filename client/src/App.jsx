@@ -12,6 +12,7 @@ import ChecklistManagement from './components/admin/ChecklistManagement';
 import OrganizationManagement from './components/admin/OrganizationManagement';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
+import AGB from './components/AGB';
 import NotFound from './components/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
 import CookieBanner from './components/CookieBanner';
@@ -42,6 +43,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/datenschutz" element={<Datenschutz />} />
+                <Route path="/agb" element={<AGB />} />
 
                 <Route path="/" element={
                   <ProtectedRoute><Dashboard /></ProtectedRoute>
