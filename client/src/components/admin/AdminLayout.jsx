@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, ListChecks, Building2 } from 'lucide-react';
+import { ArrowLeft, Users, ListChecks, Building2, ScrollText } from 'lucide-react';
 
 const tabs = [
     { path: '/admin/users', label: 'Benutzer', icon: Users },
     { path: '/admin/checklist', label: 'Checkliste', icon: ListChecks },
     { path: '/admin/organizations', label: 'Organisationen', icon: Building2 },
+    { path: '/admin/audit-logs', label: 'Prüfprotokoll', icon: ScrollText },
 ];
 
 export default function AdminLayout({ children }) {

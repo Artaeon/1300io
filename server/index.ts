@@ -17,6 +17,7 @@ import * as sentry from './observability/sentry';
 import { metricsMiddleware, metricsHandler } from './observability/metrics';
 
 import authRoutes from './routes/auth';
+import auditLogRoutes from './routes/auditLogs';
 import docsRoutes from './routes/docs';
 import userRoutes from './routes/users';
 import organizationRoutes from './routes/organizations';
@@ -126,6 +127,7 @@ app.use('/api/inspections', inspectionRoutes);
 app.use('/api/inspections', exportRoutes);
 app.use('/api/checklist', checklistRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // --- 404 + error handling (must come after all routes) ---
 app.use(notFoundHandler);

@@ -10,6 +10,7 @@ import PropertyDetail from './components/PropertyDetail';
 import UserManagement from './components/admin/UserManagement';
 import ChecklistManagement from './components/admin/ChecklistManagement';
 import OrganizationManagement from './components/admin/OrganizationManagement';
+import AuditLogs from './components/admin/AuditLogs';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import AGB from './components/AGB';
@@ -78,6 +79,9 @@ function App() {
                 } />
                 <Route path="/admin/organizations" element={
                   <AdminRoute><OrganizationManagement /></AdminRoute>
+                } />
+                <Route path="/admin/audit-logs" element={
+                  <AdminRoute><AuditLogs /></AdminRoute>
                 } />
 
                 <Route path="*" element={<NotFound />} />
