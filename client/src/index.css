@@ -142,3 +142,114 @@ body {
 
 .animate-blob-a { animation: blob-float-a 14s ease-in-out infinite; }
 .animate-blob-b { animation: blob-float-b 18s ease-in-out infinite; }
+
+/* -- Apple-ish motion primitives --------------------------------------- */
+/* Single easing curve reused everywhere for a consistent "feel". It's a
+   gentle ease-out that lands softly — feels springy without bouncing. */
+
+:root {
+  --ease-apple: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-apple-soft: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Breathing scale — for hero icons / logos. Extremely subtle, on a
+   long loop, so the page feels alive without demanding attention.
+   Paused by prefers-reduced-motion via the global rule above. */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+.animate-breathe { animation: breathe 4.5s var(--ease-apple-soft) infinite; }
+
+/* Soft vertical hover — cards and list items lift 2px with a stronger
+   shadow, then settle back. Transitions everything linearly so border,
+   background, and transform move together. */
+.hover-lift {
+  transition:
+    transform 320ms var(--ease-apple),
+    box-shadow 320ms var(--ease-apple),
+    background-color 320ms var(--ease-apple);
+  will-change: transform;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Apple-ish input: focus ring fades in rather than snapping, and the
+   background shifts one step brighter as a tactile cue. Inputs keep
+   all their own Tailwind classes — this is additive. */
+.input-apple {
+  transition:
+    background-color 220ms var(--ease-apple),
+    box-shadow 220ms var(--ease-apple),
+    border-color 220ms var(--ease-apple),
+    transform 220ms var(--ease-apple);
+}
+.input-apple:focus-visible,
+.input-apple:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.12),
+    0 0 0 1.5px rgba(59, 130, 246, 0.9);
+}
+.dark .input-apple:focus-visible,
+.dark .input-apple:focus {
+  box-shadow:
+    0 0 0 4px rgba(96, 165, 250, 0.18),
+    0 0 0 1.5px rgba(96, 165, 250, 0.9);
+}
+
+/* Apple-ish primary button. Grows 2% on hover with a soft blue glow;
+   presses down to 97% with the glow gone so it feels physically
+   "clicked". All transitions share the same easing + duration. */
+.btn-apple {
+  transition:
+    transform 200ms var(--ease-apple),
+    box-shadow 260ms var(--ease-apple),
+    background-color 260ms var(--ease-apple),
+    opacity 200ms var(--ease-apple);
+  will-change: transform;
+}
+.btn-apple:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 10px 25px -8px rgba(37, 99, 235, 0.45);
+}
+.btn-apple:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 4px 10px -4px rgba(37, 99, 235, 0.25);
+  transition-duration: 90ms;
+}
+.btn-apple:disabled {
+  transform: none;
+}
+
+/* Quieter variant for secondary / ghost buttons. */
+.btn-apple-ghost {
+  transition:
+    background-color 200ms var(--ease-apple),
+    color 200ms var(--ease-apple),
+    transform 200ms var(--ease-apple);
+}
+.btn-apple-ghost:hover:not(:disabled) { transform: translateX(-2px); }
+
+/* Underline that slides in from the left on link hover — the classic
+   "iOS settings" link treatment. Pairs with any text element; just
+   add the class. */
+.link-underline {
+  position: relative;
+  transition: color 200ms var(--ease-apple);
+}
+.link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.85;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 260ms var(--ease-apple);
+}
+.link-underline:hover::after { transform: scaleX(1); }
