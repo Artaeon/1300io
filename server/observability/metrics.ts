@@ -1,4 +1,5 @@
-const client = require('prom-client');
+import type { Request, Response, NextFunction } from 'express';
+import client from 'prom-client';
 
 const register = new client.Registry();
 
@@ -10,7 +11,7 @@ client.collectDefaultMetrics({
 const httpRequestDuration = new client.Histogram({
   name: 'onorm1300_http_request_duration_seconds',
   help: 'HTTP request duration in seconds',
-  labelNames: ['method', 'route', 'status'],
+  labelNames: ['method', 'route', 'status'] as const,
   buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
   registers: [register],
 });
@@ -18,17 +19,15 @@ const httpRequestDuration = new client.Histogram({
 const httpRequestsTotal = new client.Counter({
   name: 'onorm1300_http_requests_total',
   help: 'Total HTTP requests',
-  labelNames: ['method', 'route', 'status'],
+  labelNames: ['method', 'route', 'status'] as const,
   registers: [register],
 });
 
-function metricsMiddleware(req, res, next) {
+export function metricsMiddleware(req: Request, res: Response, next: NextFunction): void {
   const start = process.hrtime.bigint();
   res.on('finish', () => {
-    // Prefer the matched route path (e.g. /api/properties/:id) over the
-    // raw URL to keep cardinality bounded.
     const route = req.route?.path
-      ? (req.baseUrl || '') + req.route.path
+      ? (req.baseUrl ?? '') + req.route.path
       : 'unknown';
     const labels = {
       method: req.method,
@@ -42,9 +41,9 @@ function metricsMiddleware(req, res, next) {
   next();
 }
 
-async function metricsHandler(req, res) {
+export async function metricsHandler(_req: Request, res: Response): Promise<void> {
   res.set('Content-Type', register.contentType);
   res.send(await register.metrics());
 }
 
-module.exports = { metricsMiddleware, metricsHandler, register };
+export { register };
