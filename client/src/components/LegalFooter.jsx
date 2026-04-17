@@ -23,15 +23,15 @@ export default function LegalFooter() {
     return (
         <footer className="text-center py-4 text-xs text-gray-400 dark:text-gray-500">
             <div className="flex items-center justify-center flex-wrap gap-x-3 gap-y-1">
-                <Link to="/impressum" className="hover:text-gray-600 dark:hover:text-gray-300 hover:underline focus:outline-none focus-visible:underline">
+                <Link to="/impressum" className="link-underline hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus-visible:underline">
                     Impressum
                 </Link>
                 <span aria-hidden="true">|</span>
-                <Link to="/datenschutz" className="hover:text-gray-600 dark:hover:text-gray-300 hover:underline focus:outline-none focus-visible:underline">
+                <Link to="/datenschutz" className="link-underline hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus-visible:underline">
                     Datenschutz
                 </Link>
                 <span aria-hidden="true">|</span>
-                <Link to="/agb" className="hover:text-gray-600 dark:hover:text-gray-300 hover:underline focus:outline-none focus-visible:underline">
+                <Link to="/agb" className="link-underline hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus-visible:underline">
                     AGB
                 </Link>
             </div>
