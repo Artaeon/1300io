@@ -19,6 +19,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import CookieBanner from './components/CookieBanner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider } from './context/ToastContext';
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
@@ -37,6 +38,7 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
+        <ToastProvider>
         <Router>
           <AuthProvider>
             <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
@@ -90,6 +92,7 @@ function App() {
             </div>
           </AuthProvider>
         </Router>
+        </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
