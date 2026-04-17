@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: onorm1300_dev
+      POSTGRES_USER: onorm1300
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - db-data-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onorm1300 -d onorm1300_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   server:
     build:
       context: ./server
@@ -12,7 +28,12 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-    command: npm run dev
+      - DATABASE_URL=postgresql://onorm1300:dev@db:5432/onorm1300_dev
+      - UPLOAD_DIR=/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && npm run dev"
 
   client:
     build:
@@ -29,3 +50,6 @@ services:
     depends_on:
       - server
     command: npm run dev
+
+volumes:
+  db-data-dev:

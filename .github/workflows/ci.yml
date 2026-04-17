@@ -11,6 +11,26 @@ jobs:
     name: Server - Lint & Test
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: onorm1300_test
+          POSTGRES_USER: onorm1300
+          POSTGRES_PASSWORD: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U onorm1300 -d onorm1300_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      JWT_SECRET: ci-test-secret-at-least-16-chars
+      DATABASE_URL: postgresql://onorm1300:ci@localhost:5432/onorm1300_test
+      NODE_ENV: test
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,13 +49,17 @@ jobs:
         working-directory: server
         run: npx prisma generate
 
+      - name: Apply migrations
+        working-directory: server
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        working-directory: server
+        run: npm run lint --if-present
+
       - name: Run tests
         working-directory: server
         run: npm test
-        env:
-          JWT_SECRET: ci-test-secret-at-least-16-chars
-          DATABASE_URL: "file:./test.db"
-          NODE_ENV: test
 
   client-lint-and-build:
     name: Client - Lint, Test & Build
