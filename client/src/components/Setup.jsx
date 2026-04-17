@@ -151,18 +151,18 @@ export default function Setup({ onInitialized }) {
                 onClick={toggleTheme}
                 aria-label={dark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren'}
                 title={dark ? 'Hellmodus' : 'Dunkelmodus'}
-                className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-md text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="btn-apple absolute top-4 right-4 p-2.5 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-md text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             <div className="relative flex-1 flex flex-col items-center justify-center p-4">
-                <div className="flex items-center gap-3 mb-6 animate-fade-in-up text-gray-900 dark:text-gray-100">
+                <div className="flex items-center gap-3 mb-6 animate-fade-in-up animate-breathe text-gray-900 dark:text-gray-100">
                     <Logo size={44} />
                 </div>
                 <form
                     onSubmit={onFormSubmit}
                     noValidate
-                    className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-md w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60"
+                    className="hover-lift bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl hover:shadow-2xl max-w-md w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60"
                 >
                     <StepIndicator step={step} total={TOTAL_STEPS} />
 
@@ -207,9 +207,9 @@ export default function Setup({ onInitialized }) {
                                 type="button"
                                 onClick={back}
                                 disabled={loading}
-                                className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-2 py-1"
+                                className="btn-apple-ghost group flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg px-2 py-1.5"
                             >
-                                <ArrowLeft size={16} />
+                                <ArrowLeft size={16} className="transition-transform duration-300 ease-out group-hover:-translate-x-0.5" />
                                 Zurück
                             </button>
                         ) : <span />}
@@ -217,16 +217,16 @@ export default function Setup({ onInitialized }) {
                         {step < TOTAL_STEPS ? (
                             <button
                                 type="submit"
-                                className="group flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 px-5 rounded-xl hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="btn-apple group flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 px-5 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
                                 Weiter
-                                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
+                                <ArrowRight size={16} className="transition-transform duration-300 ease-out group-hover:translate-x-1" />
                             </button>
                         ) : (
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 px-5 rounded-xl hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="btn-apple flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 px-5 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
                                 {loading ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                                 {loading ? 'Einrichten…' : 'Einrichtung abschließen'}
@@ -330,7 +330,7 @@ function WelcomeStep() {
     return (
         <div className="text-center">
             <div className="flex justify-center mb-5">
-                <div className="relative">
+                <div className="relative animate-breathe">
                     <div className="absolute inset-0 rounded-2xl animate-pulse-ring" />
                     <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl shadow-lg">
                         <ShieldCheck size={40} className="text-white" />
@@ -348,7 +348,7 @@ function WelcomeStep() {
                 {items.map(({ Icon, title, body }, i) => (
                     <li
                         key={title}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 ring-1 ring-gray-100 dark:ring-gray-800 animate-fade-in-right"
+                        className="hover-lift flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 ring-1 ring-gray-100 dark:ring-gray-800 hover:bg-white dark:hover:bg-gray-800/90 animate-fade-in-right"
                         style={{ animationDelay: `${80 + i * 80}ms` }}
                     >
                         <div className="shrink-0 w-9 h-9 rounded-lg bg-white dark:bg-gray-900 shadow-sm flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -379,7 +379,7 @@ function AdminStep({ name, setName, email, setEmail, password, setPassword, conf
     return (
         <div>
             <div className="flex justify-center mb-4">
-                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl shadow-sm">
+                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl shadow-sm animate-breathe">
                     <UserPlus size={32} className="text-blue-600 dark:text-blue-400" />
                 </div>
             </div>
@@ -418,7 +418,7 @@ function OrgStep({ name, setName, error, disabled }) {
     return (
         <div>
             <div className="flex justify-center mb-4">
-                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl shadow-sm">
+                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl shadow-sm animate-breathe">
                     <Building2 size={32} className="text-blue-600 dark:text-blue-400" />
                 </div>
             </div>
@@ -454,10 +454,8 @@ function Field({ id, label, type = 'text', value, onChange, autoComplete, disabl
                     onChange={(e) => onChange(e.target.value)}
                     disabled={disabled}
                     className={[
-                        'w-full p-3 pr-10 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 outline-none transition-all disabled:opacity-60',
-                        valid
-                            ? 'ring-2 ring-green-400/60 dark:ring-green-500/60 focus:ring-green-500'
-                            : 'focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400',
+                        'input-apple w-full p-3 pr-10 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 disabled:opacity-60',
+                        valid ? 'ring-2 ring-green-400/60 dark:ring-green-500/60' : '',
                     ].join(' ')}
                 />
                 {valid && (
@@ -517,7 +515,7 @@ function PasswordField({ id, label, value, onChange, autoComplete, disabled, sho
                     onKeyDown={(e) => setCapsLock(e.getModifierState?.('CapsLock') ?? false)}
                     onBlur={() => setCapsLock(false)}
                     disabled={disabled}
-                    className="w-full p-3 pr-11 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none transition-all disabled:opacity-60"
+                    className="input-apple w-full p-3 pr-11 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 disabled:opacity-60"
                 />
                 <button
                     type="button"
