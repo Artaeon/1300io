@@ -69,6 +69,9 @@ app.get('/healthz', (req, res) => {
 });
 
 app.get('/readyz', asyncHandler(async (req, res) => {
+  if (app.locals.shuttingDown) {
+    return res.status(503).json({ status: 'shutting_down' });
+  }
   await prisma.$queryRaw`SELECT 1`;
   res.json({ status: 'ready', db: 'connected' });
 }));
@@ -116,8 +119,60 @@ app.use(errorHandler);
 
 // --- Start server ---
 if (require.main === module) {
-  app.listen(config.port, () => {
+  const server = app.listen(config.port, () => {
     logger.info(`1300.io API running on port ${config.port} (${config.nodeEnv})`);
+  });
+
+  // --- Graceful shutdown ---
+  // On SIGTERM/SIGINT: stop accepting new connections, wait for
+  // in-flight requests to finish (up to SHUTDOWN_TIMEOUT_MS), then
+  // disconnect Prisma and exit. Docker sends SIGTERM on `docker stop`;
+  // Kubernetes sends SIGTERM during pod termination.
+  const SHUTDOWN_TIMEOUT_MS = 25_000;
+  let shuttingDown = false;
+
+  function shutdown(signal) {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info(`Received ${signal}, shutting down gracefully`);
+
+    // Flip /readyz to failing so the load balancer stops sending traffic
+    // before we close the listening socket.
+    app.locals.shuttingDown = true;
+
+    const forceExit = setTimeout(() => {
+      logger.error('Shutdown timeout exceeded, forcing exit');
+      process.exit(1);
+    }, SHUTDOWN_TIMEOUT_MS);
+    forceExit.unref();
+
+    server.close(async (err) => {
+      if (err) {
+        logger.error('Error closing HTTP server', { error: err.message });
+      }
+      try {
+        await prisma.$disconnect();
+      } catch (e) {
+        logger.error('Error disconnecting Prisma', { error: e.message });
+      }
+      clearTimeout(forceExit);
+      process.exit(err ? 1 : 0);
+    });
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+
+  // Surface fatal errors before the process ends. Do NOT try to keep
+  // running — the state is unknown and continuing is worse than dying
+  // cleanly into a restart.
+  process.on('uncaughtException', (err) => {
+    logger.fatal('uncaughtException', { error: err.message, stack: err.stack });
+    shutdown('uncaughtException');
+  });
+  process.on('unhandledRejection', (reason) => {
+    logger.fatal('unhandledRejection', { reason: String(reason) });
+    shutdown('unhandledRejection');
   });
 }
 
