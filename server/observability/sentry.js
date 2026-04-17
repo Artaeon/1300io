@@ -23,7 +23,6 @@ function init(app) {
   if (!dsn) return;
 
   try {
-    // eslint-disable-next-line global-require
     sentry = require('@sentry/node');
   } catch {
     logger.warn('SENTRY_DSN is set but @sentry/node is not installed; skipping Sentry init');

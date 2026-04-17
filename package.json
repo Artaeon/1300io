@@ -9,7 +9,9 @@
     "test": "cd server && npm test && cd ../client && npm test",
     "test:server": "cd server && npm test",
     "test:client": "cd client && npm test",
-    "lint": "cd client && npm run lint",
+    "lint": "cd server && npm run lint && cd ../client && npm run lint",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client && npm run lint",
     "build": "cd client && npm run build"
   },
   "repository": {

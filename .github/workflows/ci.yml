@@ -55,7 +55,7 @@ jobs:
 
       - name: Lint
         working-directory: server
-        run: npm run lint --if-present
+        run: npm run lint
 
       - name: Run tests
         working-directory: server
