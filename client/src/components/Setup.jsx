@@ -139,7 +139,13 @@ export default function Setup({ onInitialized }) {
     }
 
     return (
-        <div className="relative min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900">
+        <div className="relative min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900 overflow-hidden">
+            {/* Decorative ambient blobs — purely visual, behind everything */}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-300/40 dark:bg-blue-600/20 blur-3xl animate-blob-a" />
+                <div className="absolute -bottom-32 -right-20 w-96 h-96 rounded-full bg-indigo-300/40 dark:bg-indigo-700/20 blur-3xl animate-blob-b" />
+                <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full bg-purple-200/30 dark:bg-purple-700/10 blur-3xl animate-blob-a" style={{ animationDelay: '4s' }} />
+            </div>
             <button
                 type="button"
                 onClick={toggleTheme}
@@ -149,7 +155,7 @@ export default function Setup({ onInitialized }) {
             >
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
+            <div className="relative flex-1 flex flex-col items-center justify-center p-4">
                 <div className="flex items-center gap-3 mb-6 animate-fade-in-up text-gray-900 dark:text-gray-100">
                     <Logo size={44} />
                 </div>
@@ -161,7 +167,11 @@ export default function Setup({ onInitialized }) {
                     <StepIndicator step={step} total={TOTAL_STEPS} />
 
                     {serverError && (
-                        <div role="alert" className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-sm text-center flex items-start gap-2">
+                        <div
+                            key={serverError}
+                            role="alert"
+                            className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-sm text-left flex items-start gap-2 animate-shake ring-1 ring-red-200 dark:ring-red-900/60"
+                        >
                             <AlertTriangle size={16} className="mt-0.5 shrink-0" />
                             <span>{serverError}</span>
                         </div>
