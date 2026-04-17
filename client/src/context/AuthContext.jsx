@@ -140,9 +140,21 @@ export function AuthProvider({ children }) {
         return true;
     }, []);
 
+    // Seed the session from an external flow that already obtained
+    // tokens server-side — used by the first-run setup wizard so the
+    // admin lands logged in after POST /api/setup/initialize, without
+    // a round-trip to /api/auth/login.
+    const bootstrapSession = useCallback(({ token: t, refreshToken: rt, user: u }) => {
+        localStorage.setItem('token', t);
+        localStorage.setItem('refreshToken', rt);
+        setToken(t);
+        setUser(u);
+        sessionExpiredNoticedRef.current = false;
+    }, []);
+
     const value = useMemo(
-        () => ({ user, token, login, logout, authFetch }),
-        [user, token, login, logout, authFetch],
+        () => ({ user, token, login, logout, authFetch, bootstrapSession }),
+        [user, token, login, logout, authFetch, bootstrapSession],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
