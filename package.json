@@ -12,7 +12,16 @@
     "lint": "cd server && npm run lint && cd ../client && npm run lint",
     "lint:server": "cd server && npm run lint",
     "lint:client": "cd client && npm run lint",
-    "build": "cd client && npm run build"
+    "build": "cd client && npm run build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "server/**/*.js": "eslint --fix --max-warnings=0",
+    "client/**/*.{js,jsx}": "eslint --fix --max-warnings=0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2"
   },
   "repository": {
     "type": "git",
