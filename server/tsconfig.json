@@ -28,12 +28,9 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": false,
-
-    "allowJs": true,
-    "checkJs": false
+    "exactOptionalPropertyTypes": false
   },
-  "include": ["**/*.ts", "**/*.js", "**/*.json"],
+  "include": ["**/*.ts", "openapi.json"],
   "exclude": [
     "node_modules",
     "dist",
@@ -41,8 +38,9 @@
     "uploads",
     "test-uploads",
     "prisma/migrations",
-    "**/*.test.js",
     "**/*.test.ts",
-    "__tests__"
+    "__tests__",
+    "eslint.config.js",
+    "vitest.config.mjs"
   ]
 }
