@@ -100,7 +100,7 @@ The project is organized as a monorepo with two packages:
 | Package | Stack | Purpose |
 |---------|-------|---------|
 | `client/` | React 19, Vite 7, Tailwind CSS 4 | Mobile-first SPA with iOS-style UI and dark mode |
-| `server/` | Express 5, Prisma ORM, PDFKit, Sharp | REST API, JWT auth, PDF generation, image optimization |
+| `server/` | TypeScript 5.9 (strict), Express 5, Prisma ORM, PDFKit, Sharp | REST API, JWT auth, PDF generation, image optimization |
 
 ### Further reading
 

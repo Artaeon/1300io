@@ -33,11 +33,11 @@ High-level map of how the pieces fit. For deploying, see [DEPLOYMENT.md](DEPLOYM
 - CookieBanner is shown once per browser to disclose localStorage use
 
 ### server (`server/`)
-- Express 5, Prisma 6, Node 22
+- Express 5, Prisma, Node 22, **TypeScript 5.9 (strict)**. Production image runs `node dist/index.js` after `tsc` emits to `dist/`. Dev uses `tsx watch index.ts` so there's no build step in the loop
 - Auth: bearer JWT, 15 min access token, 7 day single-use refresh token (rotates on use)
 - Role-based authz: `ADMIN`, `MANAGER`, `INSPECTOR`, `READONLY`
-- Org scoping: queries are automatically filtered by `organizationId` via `injectOrgFilter`
-- File uploads: multer → `sharp` image optimizer → `/data/uploads`
+- Org scoping: queries filtered by `organizationId` via `injectOrgFilter`; id-based endpoints additionally run `canAccessOrg(user, org)` and return 404 (not 403) on mismatch so record existence doesn't leak across tenants
+- File uploads: multer → `sharp` image optimizer (2048px max, re-encode) → `/data/uploads`
 - PDF generation: `pdfkit`, streamed directly to the HTTP response
 
 ### db
@@ -88,7 +88,7 @@ See `server/prisma/schema.prisma`. Highlights:
 - Additional validations: add Zod schema in `server/schemas.js`, use `validateBody(...)` / `validateParams(...)`
 - Additional metrics: extend `server/observability/metrics.js` with new `client.Counter` / `Histogram`
 - i18n: not yet added. All UI strings are German. `react-i18next` would be the natural fit; strings live in `client/src/components/**`
-- TypeScript: not yet added. Incremental migration possible — Prisma already exports types, so the server is low-risk; the client has ~30 components and could be done file-by-file
+- TypeScript: done on the server (strict mode, every file under `server/*.ts`). Client is still JSX — incremental migration can be done file-by-file, `@types/react` is already installed
 
 ## Known gaps
 
