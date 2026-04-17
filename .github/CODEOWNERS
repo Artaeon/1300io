@@ -1,0 +1,28 @@
+# CODEOWNERS determines default reviewers for PRs touching these paths.
+# Patterns are checked top-to-bottom; later matches override earlier ones.
+# Users must have write access to the repo for their review to be required.
+
+# Everything defaults to the repo owner
+*                                           @Artaeon
+
+# Security-sensitive areas — require explicit review
+/server/middleware/security.ts              @Artaeon
+/server/middleware/auth.ts                  @Artaeon
+/server/middleware/originCheck.ts           @Artaeon
+/server/routes/auth.ts                      @Artaeon
+/server/lib/passwordPolicy.ts               @Artaeon
+/server/prisma/schema.prisma                @Artaeon
+/server/prisma/migrations/                  @Artaeon
+
+# CI / deploy / container pipeline
+/.github/workflows/                         @Artaeon
+/docker-compose*.yml                        @Artaeon
+/server/Dockerfile                          @Artaeon
+/client/Dockerfile                          @Artaeon
+/client/nginx.conf                          @Artaeon
+
+# Legal / compliance
+/client/src/components/Impressum.jsx        @Artaeon
+/client/src/components/Datenschutz.jsx      @Artaeon
+/client/src/components/AGB.jsx              @Artaeon
+/SECURITY.md                                @Artaeon
