@@ -16,6 +16,7 @@ const { requestId } = require('./middleware/requestId');
 const { enforceHttps, securityHeaders } = require('./middleware/security');
 const { originCheck } = require('./middleware/originCheck');
 const sentry = require('./observability/sentry');
+const { metricsMiddleware, metricsHandler } = require('./observability/metrics');
 const { createAuditEntry, getAuditContext } = require('./audit');
 const bcrypt = require('bcryptjs');
 const {
@@ -58,6 +59,7 @@ if (!fs.existsSync(uploadDir)) {
 app.set('trust proxy', 1);
 
 app.use(requestId);
+app.use(metricsMiddleware);
 app.use(enforceHttps);
 app.use(securityHeaders());
 app.disable('x-powered-by');
@@ -201,6 +203,19 @@ app.get('/readyz', asyncHandler(async (req, res) => {
 app.get('/health', asyncHandler(async (req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   res.json({ status: 'ok', db: 'connected' });
+}));
+
+// Prometheus metrics. Gate behind METRICS_TOKEN in production so only
+// the scraper with the shared secret can pull them.
+app.get('/metrics', asyncHandler(async (req, res) => {
+  const token = process.env.METRICS_TOKEN;
+  if (isProduction && token) {
+    const auth = req.get('authorization');
+    if (auth !== `Bearer ${token}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+  return metricsHandler(req, res);
 }));
 
 // Auth routes (with login rate limiting)
