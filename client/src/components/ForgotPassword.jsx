@@ -36,10 +36,10 @@ export default function ForgotPassword() {
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
             <div className="flex-1 flex items-center justify-center p-4">
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-sm w-full">
+                <div className="hover-lift bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl hover:shadow-2xl max-w-sm w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <div className="flex justify-center mb-6">
-                        <div className="bg-blue-100 dark:bg-blue-900/40 p-4 rounded-full">
-                            <KeyRound size={40} className="text-blue-600 dark:text-blue-400" />
+                        <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl animate-breathe">
+                            <KeyRound size={32} className="text-blue-600 dark:text-blue-400" />
                         </div>
                     </div>
 
@@ -56,7 +56,7 @@ export default function ForgotPassword() {
                             </p>
                             <Link
                                 to="/login"
-                                className="block w-full bg-blue-600 dark:bg-blue-500 text-white text-center font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="btn-apple block w-full bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white text-center font-semibold py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
                                 Zur Anmeldung
                             </Link>
@@ -81,20 +81,20 @@ export default function ForgotPassword() {
                                         disabled={loading}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none disabled:opacity-60"
+                                        className="input-apple w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 disabled:opacity-60"
                                     />
                                 </div>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                    className="btn-apple w-full bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                 >
                                     {loading && <Loader2 size={18} className="animate-spin" />}
                                     {loading ? 'Wird gesendet…' : 'Reset-Link senden'}
                                 </button>
                                 <Link
                                     to="/login"
-                                    className="block text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                    className="link-underline block text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                                 >
                                     Zurück zur Anmeldung
                                 </Link>
