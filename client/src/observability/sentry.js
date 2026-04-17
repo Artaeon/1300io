@@ -14,9 +14,13 @@ export async function initSentry() {
     const dsn = import.meta.env.VITE_SENTRY_DSN;
     if (!dsn) return;
 
+    // Opaque the specifier so Vite's static import-analysis can't resolve
+    // it at build time. Without this, an uninstalled @sentry/react breaks
+    // the dev server even though the import is wrapped in try/catch.
+    const pkg = /* @vite-ignore */ '@sentry/react';
     let Sentry;
     try {
-        Sentry = await import('@sentry/react');
+        Sentry = await import(/* @vite-ignore */ pkg);
     } catch {
         // @sentry/react not installed; silently skip.
         return;
