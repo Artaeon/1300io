@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ---- build stage ----
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 
 RUN apk add --no-cache openssl
 
@@ -22,7 +22,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # ---- runtime stage ----
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 
 RUN apk add --no-cache openssl tini
 
