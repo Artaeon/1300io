@@ -14,6 +14,7 @@ import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import NotFound from './components/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
+import CookieBanner from './components/CookieBanner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -79,6 +80,7 @@ function App() {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <CookieBanner />
             </div>
           </AuthProvider>
         </Router>
