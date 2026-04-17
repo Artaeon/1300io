@@ -1,6 +1,6 @@
-const rateLimit = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
-const globalLimiter = rateLimit({
+export const globalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
   standardHeaders: true,
@@ -8,7 +8,7 @@ const globalLimiter = rateLimit({
   message: { error: 'Too many requests. Please try again later.' },
 });
 
-const loginLimiter = rateLimit({
+export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   standardHeaders: true,
@@ -16,16 +16,14 @@ const loginLimiter = rateLimit({
   message: { error: 'Too many login attempts. Please try again in 15 minutes.' },
 });
 
-const uploadLimiter = rateLimit({
+export const uploadLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
   message: { error: 'Upload rate limit exceeded. Please try again later.' },
 });
 
-const pdfLimiter = rateLimit({
+export const pdfLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
   message: { error: 'PDF generation rate limit exceeded. Please try again later.' },
 });
-
-module.exports = { globalLimiter, loginLimiter, uploadLimiter, pdfLimiter };
