@@ -11,6 +11,7 @@ import { requestId } from './middleware/requestId';
 import { enforceHttps, securityHeaders } from './middleware/security';
 import { originCheck } from './middleware/originCheck';
 import { globalLimiter, loginLimiter } from './middleware/rateLimiters';
+import { checkLockout } from './middleware/accountLockout';
 import { uploadDir } from './middleware/uploadHandler';
 
 import * as sentry from './observability/sentry';
@@ -108,7 +109,10 @@ app.get(
 );
 
 // --- API routes ---
-app.use('/api/auth/login', loginLimiter);
+// Login request pipeline: first IP-based rate limiter (cheap, stops
+// brute-force from a single source), then per-email lockout (handles
+// credential-stuffing across rotating IPs).
+app.use('/api/auth/login', loginLimiter, checkLockout);
 app.use('/api/auth', authRoutes);
 
 // Swagger UI needs inline script/style; relax CSP just for /api/docs.
