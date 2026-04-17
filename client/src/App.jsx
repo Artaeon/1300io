@@ -18,6 +18,7 @@ import NotFound from './components/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
 import CookieBanner from './components/CookieBanner';
 import OfflineBanner from './components/OfflineBanner';
+import SkipToContent from './components/SkipToContent';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -43,7 +44,9 @@ function App() {
         <Router>
           <AuthProvider>
             <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
+              <SkipToContent />
               <OfflineBanner />
+              <main id="main-content">
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/impressum" element={<Impressum />} />
@@ -90,6 +93,7 @@ function App() {
 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </main>
               <CookieBanner />
             </div>
           </AuthProvider>
