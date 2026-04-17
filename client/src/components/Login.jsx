@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth, LoginError } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Loader2 } from 'lucide-react';
+import Logo from './Logo';
 import LegalFooter from './LegalFooter';
 
 export default function Login() {
@@ -37,11 +38,14 @@ export default function Login() {
 
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
-            <div className="flex-1 flex items-center justify-center p-4">
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-sm w-full">
-                    <div className="flex justify-center mb-6">
-                        <div className="bg-blue-100 dark:bg-blue-900/40 p-4 rounded-full">
-                            <Lock size={40} className="text-blue-600 dark:text-blue-400" />
+            <div className="flex-1 flex flex-col items-center justify-center p-4">
+                <div className="mb-5 text-gray-900 dark:text-gray-100 animate-fade-in-up">
+                    <Logo size={40} />
+                </div>
+                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-sm w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
+                    <div className="flex justify-center mb-5">
+                        <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl">
+                            <Lock size={32} className="text-blue-600 dark:text-blue-400" />
                         </div>
                     </div>
                     <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Anmelden</h1>
