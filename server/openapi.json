@@ -1,0 +1,305 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "1300.io API",
+    "version": "1.0.0",
+    "description": "Open-source SaaS for Austrian property safety inspections (ÖNORM B 1300). Bearer-token (JWT) authentication; refresh tokens rotate on use.",
+    "contact": {
+      "name": "Stoicera GesbR",
+      "email": "office@stoicera.com"
+    },
+    "license": { "name": "MIT" }
+  },
+  "servers": [
+    { "url": "/", "description": "Current host" }
+  ],
+  "tags": [
+    { "name": "Auth" },
+    { "name": "Health" },
+    { "name": "Properties" },
+    { "name": "Inspections" },
+    { "name": "Checklist" },
+    { "name": "Users" },
+    { "name": "Organizations" },
+    { "name": "Upload" },
+    { "name": "Reports" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string" },
+          "requestId": { "type": "string" },
+          "details": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string" },
+          "refreshToken": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "name": { "type": "string" },
+          "role": { "type": "string", "enum": ["ADMIN", "MANAGER", "INSPECTOR", "READONLY"] },
+          "organizationId": { "type": "integer", "nullable": true }
+        }
+      },
+      "Property": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "address": { "type": "string" },
+          "owner_name": { "type": "string" },
+          "units_count": { "type": "integer" },
+          "organizationId": { "type": "integer", "nullable": true }
+        }
+      },
+      "Inspection": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "property_id": { "type": "integer" },
+          "date": { "type": "string", "format": "date-time" },
+          "ended_at": { "type": "string", "format": "date-time", "nullable": true },
+          "status": { "type": "string", "enum": ["DRAFT", "COMPLETED"] },
+          "inspector_name": { "type": "string" }
+        }
+      },
+      "InspectionResult": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "inspection_id": { "type": "integer" },
+          "checklist_item_id": { "type": "integer" },
+          "status": { "type": "string", "enum": ["OK", "DEFECT", "NOT_APPLICABLE"] },
+          "comment": { "type": "string", "nullable": true },
+          "photo_url": { "type": "string", "nullable": true }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Liveness probe",
+        "security": [],
+        "responses": { "200": { "description": "ok" } }
+      }
+    },
+    "/readyz": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Readiness probe (checks DB connectivity)",
+        "security": [],
+        "responses": {
+          "200": { "description": "ready" },
+          "500": { "description": "DB unreachable" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Log in with email + password, get access + refresh token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } }
+        },
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } } },
+          "401": { "description": "Invalid credentials" },
+          "429": { "description": "Too many attempts" }
+        }
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Exchange a refresh token for a new access + refresh token pair",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["refreshToken"],
+                "properties": { "refreshToken": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "new token pair" },
+          "401": { "description": "refresh token invalid or expired" }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Invalidate a refresh token",
+        "security": [],
+        "responses": { "200": { "description": "logged out" } }
+      }
+    },
+    "/api/properties": {
+      "get": {
+        "tags": ["Properties"],
+        "summary": "List properties (paginated, scoped to caller's org)",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "minimum": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 100 } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Property" } },
+                    "total": { "type": "integer" },
+                    "page": { "type": "integer" },
+                    "limit": { "type": "integer" },
+                    "totalPages": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Properties"],
+        "summary": "Create a property (ADMIN, MANAGER)",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Property" } } }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Validation failed" }
+        }
+      }
+    },
+    "/api/properties/{id}": {
+      "get": {
+        "tags": ["Properties"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" } }
+      },
+      "put": {
+        "tags": ["Properties"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" } }
+      },
+      "delete": {
+        "tags": ["Properties"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "409": { "description": "Active draft inspection exists" }
+        }
+      }
+    },
+    "/api/inspections": {
+      "post": {
+        "tags": ["Inspections"],
+        "summary": "Start a new inspection (DRAFT status)",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/inspections/{id}/results": {
+      "post": {
+        "tags": ["Inspections"],
+        "summary": "Save a single checklist result; auto-creates/resolves defects",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Updated existing result" },
+          "201": { "description": "Created new result" },
+          "400": { "description": "Inspection already completed" }
+        }
+      }
+    },
+    "/api/inspections/{id}/complete": {
+      "post": {
+        "tags": ["Inspections"],
+        "summary": "Mark inspection as COMPLETED",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/inspections/{id}/pdf": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Generate A4 PDF report",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": {
+            "description": "PDF file",
+            "content": { "application/pdf": { "schema": { "type": "string", "format": "binary" } } }
+          }
+        }
+      }
+    },
+    "/api/inspections/{id}/export/csv": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Export results as CSV (UTF-8 BOM, Excel-compatible)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "CSV" } }
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "tags": ["Upload"],
+        "summary": "Upload a photo (JPEG/PNG/WebP, max 10MB). Returns public URL.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": { "photo": { "type": "string", "format": "binary" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Uploaded", "content": { "application/json": { "schema": { "type": "object", "properties": { "url": { "type": "string" } } } } } },
+          "413": { "description": "File too large" }
+        }
+      }
+    }
+  }
+}

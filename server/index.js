@@ -16,6 +16,7 @@ const sentry = require('./observability/sentry');
 const { metricsMiddleware, metricsHandler } = require('./observability/metrics');
 
 const authRoutes = require('./routes/auth');
+const docsRoutes = require('./routes/docs');
 const userRoutes = require('./routes/users');
 const organizationRoutes = require('./routes/organizations');
 const propertyRoutes = require('./routes/properties');
@@ -91,6 +92,15 @@ app.get('/metrics', asyncHandler(async (req, res) => {
 // --- API routes ---
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', authRoutes);
+// Swagger UI needs inline script/style; relax CSP just for /api/docs.
+app.use('/api/docs', (req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
+  );
+  next();
+});
+app.use('/api', docsRoutes); // /api/docs (Swagger UI) + /api/openapi.json
 app.use('/api/users', userRoutes);
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/properties', propertyRoutes);
