@@ -12,6 +12,8 @@ import ChecklistManagement from './components/admin/ChecklistManagement';
 import OrganizationManagement from './components/admin/OrganizationManagement';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
+import NotFound from './components/NotFound';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -30,54 +32,58 @@ const AdminRoute = ({ children }) => {
 
 function App() {
   return (
-    <ThemeProvider>
-    <Router>
-      <AuthProvider>
-        <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route path="/datenschutz" element={<Datenschutz />} />
+    <ErrorBoundary>
+      <ThemeProvider>
+        <Router>
+          <AuthProvider>
+            <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/impressum" element={<Impressum />} />
+                <Route path="/datenschutz" element={<Datenschutz />} />
 
-            <Route path="/" element={
-              <ProtectedRoute><Dashboard /></ProtectedRoute>
-            } />
+                <Route path="/" element={
+                  <ProtectedRoute><Dashboard /></ProtectedRoute>
+                } />
 
-            <Route path="/properties/new" element={
-              <ProtectedRoute><AddProperty /></ProtectedRoute>
-            } />
+                <Route path="/properties/new" element={
+                  <ProtectedRoute><AddProperty /></ProtectedRoute>
+                } />
 
-            <Route path="/properties/:id" element={
-              <ProtectedRoute><PropertyDetail /></ProtectedRoute>
-            } />
+                <Route path="/properties/:id" element={
+                  <ProtectedRoute><PropertyDetail /></ProtectedRoute>
+                } />
 
-            <Route path="/properties/:id/edit" element={
-              <ProtectedRoute><EditProperty /></ProtectedRoute>
-            } />
+                <Route path="/properties/:id/edit" element={
+                  <ProtectedRoute><EditProperty /></ProtectedRoute>
+                } />
 
-            <Route path="/inspection/new/:propertyId" element={
-              <ProtectedRoute><InspectionWizard /></ProtectedRoute>
-            } />
+                <Route path="/inspection/new/:propertyId" element={
+                  <ProtectedRoute><InspectionWizard /></ProtectedRoute>
+                } />
 
-            <Route path="/inspection/finish/:id" element={
-              <ProtectedRoute><InspectionFinish /></ProtectedRoute>
-            } />
+                <Route path="/inspection/finish/:id" element={
+                  <ProtectedRoute><InspectionFinish /></ProtectedRoute>
+                } />
 
-            {/* Admin Routes */}
-            <Route path="/admin/users" element={
-              <AdminRoute><UserManagement /></AdminRoute>
-            } />
-            <Route path="/admin/checklist" element={
-              <AdminRoute><ChecklistManagement /></AdminRoute>
-            } />
-            <Route path="/admin/organizations" element={
-              <AdminRoute><OrganizationManagement /></AdminRoute>
-            } />
-          </Routes>
-        </div>
-      </AuthProvider>
-    </Router>
-    </ThemeProvider>
+                {/* Admin Routes */}
+                <Route path="/admin/users" element={
+                  <AdminRoute><UserManagement /></AdminRoute>
+                } />
+                <Route path="/admin/checklist" element={
+                  <AdminRoute><ChecklistManagement /></AdminRoute>
+                } />
+                <Route path="/admin/organizations" element={
+                  <AdminRoute><OrganizationManagement /></AdminRoute>
+                } />
+
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          </AuthProvider>
+        </Router>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 
