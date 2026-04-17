@@ -1,9 +1,32 @@
 node_modules
 npm-debug.log
 dist
+
+# env files — never in the image
 .env
-.env.local
+.env.*
+!.env.example
+
+# tests and dev tooling
 __tests__
 *.test.js
 *.test.jsx
+vitest.config.js
+eslint.config.js
+
+# docs and VCS
+*.md
 .gitignore
+.git
+
+# docker meta
+Dockerfile
+.dockerignore
+
+# logs and coverage
+*.log
+coverage
+
+# editor
+.vscode
+.idea

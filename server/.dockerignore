@@ -1,10 +1,40 @@
 node_modules
 npm-debug.log
+
+# env files — never in the image
 .env
-.env.local
-uploads/
-prisma/dev.db
-prisma/dev.db-journal
+.env.*
+!.env.example
+
+# tests and dev tooling
 __tests__
 *.test.js
+vitest.config.mjs
+eslint.config.js
+
+# docs and VCS
+*.md
 .gitignore
+.git
+
+# docker meta
+Dockerfile
+.dockerignore
+
+# logs and coverage
+*.log
+coverage
+
+# local dev artifacts
+uploads
+*.db
+*.sqlite*
+test-uploads
+
+# editor
+.vscode
+.idea
+
+# TypeScript build intermediates (reserved for upcoming migration)
+dist
+*.tsbuildinfo
