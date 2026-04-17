@@ -17,6 +17,7 @@ import AGB from './components/AGB';
 import NotFound from './components/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
 import CookieBanner from './components/CookieBanner';
+import OfflineBanner from './components/OfflineBanner';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
@@ -42,6 +43,7 @@ function App() {
         <Router>
           <AuthProvider>
             <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
+              <OfflineBanner />
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/impressum" element={<Impressum />} />
