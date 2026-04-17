@@ -30,6 +30,7 @@ export default function Setup({ onInitialized }) {
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [serverError, setServerError] = useState('');
+    const [success, setSuccess] = useState(false);
 
     // Admin fields
     const [adminName, setAdminName] = useState('');
@@ -104,20 +105,38 @@ export default function Setup({ onInitialized }) {
                 }
                 return;
             }
-            // Success: seed the auth context so we're logged in immediately.
-            bootstrapSession({
-                token: data.token,
-                refreshToken: data.refreshToken,
-                user: data.user,
-            });
-            if (onInitialized) onInitialized();
-            navigate('/', { replace: true });
+            // Success: show the celebration overlay for ~1.4s so the user
+            // sees the confirmation, then seed the auth context and route.
+            setSuccess(true);
+            setTimeout(() => {
+                bootstrapSession({
+                    token: data.token,
+                    refreshToken: data.refreshToken,
+                    user: data.user,
+                });
+                if (onInitialized) onInitialized();
+                navigate('/', { replace: true });
+            }, 1400);
         } catch {
             setServerError('Verbindungsfehler. Bitte erneut versuchen.');
         } finally {
             setLoading(false);
         }
     };
+
+    const onFormSubmit = (e) => {
+        e.preventDefault();
+        if (loading) return;
+        if (step < TOTAL_STEPS) {
+            next();
+        } else {
+            submit();
+        }
+    };
+
+    if (success) {
+        return <SuccessOverlay orgName={orgName} />;
+    }
 
     return (
         <div className="relative min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900">
@@ -134,7 +153,11 @@ export default function Setup({ onInitialized }) {
                 <div className="flex items-center gap-3 mb-6 animate-fade-in-up text-gray-900 dark:text-gray-100">
                     <Logo size={44} />
                 </div>
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-md w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
+                <form
+                    onSubmit={onFormSubmit}
+                    noValidate
+                    className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-md w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60"
+                >
                     <StepIndicator step={step} total={TOTAL_STEPS} />
 
                     {serverError && (
@@ -183,26 +206,24 @@ export default function Setup({ onInitialized }) {
 
                         {step < TOTAL_STEPS ? (
                             <button
-                                type="button"
-                                onClick={next}
-                                className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 px-5 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                type="submit"
+                                className="group flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 px-5 rounded-xl hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
                                 Weiter
-                                <ArrowRight size={16} />
+                                <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                             </button>
                         ) : (
                             <button
-                                type="button"
-                                onClick={submit}
+                                type="submit"
                                 disabled={loading}
-                                className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 px-5 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-semibold py-3 px-5 rounded-xl hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
                                 {loading ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
                                 {loading ? 'Einrichten…' : 'Einrichtung abschließen'}
                             </button>
                         )}
                     </div>
-                </div>
+                </form>
             </div>
             <LegalFooter />
         </div>
@@ -210,6 +231,47 @@ export default function Setup({ onInitialized }) {
 }
 
 const STEP_LABELS = ['Willkommen', 'Admin-Konto', 'Organisation'];
+
+function SuccessOverlay({ orgName }) {
+    return (
+        <div className="relative min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900">
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-10 rounded-2xl shadow-xl max-w-sm w-full text-center animate-pop-in ring-1 ring-gray-200/60 dark:ring-gray-800/60">
+                <div className="flex justify-center mb-6">
+                    <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg">
+                        <div className="absolute inset-0 rounded-full animate-pulse-ring" />
+                        <svg
+                            viewBox="0 0 48 48"
+                            width="40"
+                            height="40"
+                            fill="none"
+                            aria-hidden="true"
+                        >
+                            <path
+                                d="M14 24 L22 32 L36 16"
+                                stroke="white"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="animate-checkmark-draw"
+                            />
+                        </svg>
+                    </div>
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1 animate-fade-in-up">
+                    Alles bereit!
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+                    {orgName ? <>Willkommen in {orgName}. </> : null}
+                    Sie werden zur Übersicht weitergeleitet…
+                </p>
+                <div className="mt-6 h-1 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-600 animate-shimmer" />
+                </div>
+            </div>
+            <LegalFooter />
+        </div>
+    );
+}
 
 function StepIndicator({ step, total }) {
     const pct = ((step - 1) / (total - 1)) * 100;
