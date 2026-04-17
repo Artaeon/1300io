@@ -1,29 +1,16 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../hooks/useToast';
+import { useBeforeUnload } from '../hooks/useBeforeUnload';
 import { Camera, Check, AlertTriangle, XCircle, ArrowRight, Loader2, RotateCcw } from 'lucide-react';
-
-// Toast Component
-const Toast = ({ message, type, onClose }) => {
-    useEffect(() => {
-        const timer = setTimeout(onClose, 4000);
-        return () => clearTimeout(timer);
-    }, [onClose]);
-
-    return (
-        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl shadow-lg flex items-center gap-2 animate-in slide-in-from-top duration-300 ${type === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
-            }`}>
-            {type === 'error' ? <AlertTriangle size={20} /> : <Check size={20} />}
-            <span className="font-medium">{message}</span>
-        </div>
-    );
-};
 
 export default function InspectionWizard() {
     const { propertyId } = useParams();
     const navigate = useNavigate();
 
     const { user, authFetch } = useAuth();
+    const { toast } = useToast();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0);
@@ -38,34 +25,71 @@ export default function InspectionWizard() {
     // Loading & Error States
     const [uploadingItems, setUploadingItems] = useState({});
     const [savingStatus, setSavingStatus] = useState({});
+    const [saveErrors, setSaveErrors] = useState({});
     const [isSaving, setIsSaving] = useState(false);
-    const [toast, setToast] = useState(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     // Debounce timers for comment auto-save
     const commentTimers = useRef({});
 
-    const showToast = useCallback((message, type = 'success') => {
-        setToast({ message, type });
-    }, []);
+    // Warn on tab-close / reload if there are unsaved answers in flight.
+    // hasActiveUploads is true during photo upload; we also guard against
+    // the 1s comment debounce window by tracking isDirty.
+    const hasActiveUploads = Object.values(uploadingItems).some((v) => v);
+    useBeforeUnload((isDirty || hasActiveUploads) && !submitted);
 
-    // Save a single result to the server
-    const saveResult = useCallback(async (inspId, itemId, answer) => {
-        if (!inspId || !answer.status) return;
-        try {
-            await authFetch(`/api/inspections/${inspId}/results`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    checklistItemId: parseInt(itemId),
-                    status: answer.status,
-                    comment: answer.comment || '',
-                    photoUrl: answer.photoUrl || ''
-                })
-            });
-        } catch {
-            showToast('Speichern fehlgeschlagen', 'error');
-        }
-    }, [authFetch, showToast]);
+    const showToast = useCallback(
+        (message, type = 'success') => {
+            if (type === 'error') toast.error(message);
+            else toast.success(message);
+        },
+        [toast],
+    );
+
+    // Save a single result to the server.
+    //
+    // Errors are tracked per-item in saveErrors so the UI can show a
+    // small red indicator on the affected row. isDirty flips on every
+    // save attempt so beforeunload warns if the user closes the tab
+    // before a save completes. It's cleared only on successful save.
+    const saveResult = useCallback(
+        async (inspId, itemId, answer, { silent = false } = {}) => {
+            if (!inspId || !answer.status) return;
+            setIsDirty(true);
+            try {
+                const res = await authFetch(`/api/inspections/${inspId}/results`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        checklistItemId: parseInt(itemId),
+                        status: answer.status,
+                        comment: answer.comment || '',
+                        photoUrl: answer.photoUrl || '',
+                    }),
+                });
+                if (!res.ok) throw new Error('save failed');
+                setSaveErrors((prev) => {
+                    if (!prev[itemId]) return prev;
+                    const next = { ...prev };
+                    delete next[itemId];
+                    return next;
+                });
+                setIsDirty(false);
+            } catch {
+                setSaveErrors((prev) => ({ ...prev, [itemId]: true }));
+                if (!silent) {
+                    toast.error('Speichern fehlgeschlagen.', {
+                        action: {
+                            label: 'Erneut',
+                            onClick: () => saveResult(inspId, itemId, answer, { silent: true }),
+                        },
+                    });
+                }
+            }
+        },
+        [authFetch, toast],
+    );
 
     // Resume a draft — load existing results into answers state
     const resumeDraft = useCallback(async (draftId) => {
@@ -266,16 +290,21 @@ export default function InspectionWizard() {
     const handleNext = async () => {
         if (currentCategoryIndex < categories.length - 1) {
             window.scrollTo(0, 0);
-            setCurrentCategoryIndex(prev => prev + 1);
+            setCurrentCategoryIndex((prev) => prev + 1);
         } else {
-            // All results already auto-saved — just navigate to finish
+            // Block submit if any per-item saves are still in flight /
+            // failed — a completed inspection with missing results would
+            // ship an incomplete PDF.
+            if (Object.keys(saveErrors).length > 0) {
+                toast.error('Einige Antworten konnten nicht gespeichert werden. Bitte erneut versuchen, bevor die Prüfung abgeschlossen wird.');
+                return;
+            }
             setIsSaving(true);
+            setSubmitted(true);
             navigate(`/inspection/finish/${inspectionId}`);
         }
     };
 
-    // Check if any uploads are in progress
-    const hasActiveUploads = Object.values(uploadingItems).some(v => v);
     const isButtonDisabled = isSaving || hasActiveUploads;
 
     if (loading) {
@@ -336,14 +365,7 @@ export default function InspectionWizard() {
 
     return (
         <div className="pb-24 bg-gray-100/50 dark:bg-gray-950 min-h-screen">
-            {/* Toast Notification */}
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
+            {/* Toasts are rendered globally via ToastProvider */}
 
             {/* Header */}
             <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-10 border-b border-gray-200/50 dark:border-gray-800/50 px-4 py-3 flex items-center justify-between">
@@ -370,17 +392,38 @@ export default function InspectionWizard() {
                     const isUploading = uploadingItems[item.id];
                     const justSaved = savingStatus[item.id];
                     const hasOpenDefect = openDefects[item.id];
+                    const saveFailed = saveErrors[item.id];
 
                     return (
-                        <div key={item.id} className={`bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm transition-all duration-200 ${justSaved ? 'ring-2 ring-green-400 dark:ring-green-500' : hasOpenDefect ? 'ring-1 ring-orange-300 dark:ring-orange-500' : ''
-                            }`}>
+                        <div
+                            key={item.id}
+                            className={`bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-sm transition-all duration-200 ${
+                                saveFailed
+                                    ? 'ring-2 ring-red-400 dark:ring-red-500'
+                                    : justSaved
+                                      ? 'ring-2 ring-green-400 dark:ring-green-500'
+                                      : hasOpenDefect
+                                        ? 'ring-1 ring-orange-300 dark:ring-orange-500'
+                                        : ''
+                            }`}
+                        >
                             <div className="flex items-start justify-between gap-2 mb-4">
                                 <p className="font-medium text-gray-900 dark:text-gray-100 text-lg">{item.text}</p>
-                                {hasOpenDefect && (
+                                {hasOpenDefect && !saveFailed && (
                                     <span className="flex items-center gap-1 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 px-2 py-1 rounded-full whitespace-nowrap shrink-0">
                                         <AlertTriangle size={12} />
                                         Vorheriger Mangel
                                     </span>
+                                )}
+                                {saveFailed && (
+                                    <button
+                                        type="button"
+                                        onClick={() => saveResult(inspectionId, item.id, answer)}
+                                        className="flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-full shrink-0 hover:bg-red-100 dark:hover:bg-red-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                                    >
+                                        <AlertTriangle size={12} />
+                                        Nicht gespeichert — erneut versuchen
+                                    </button>
                                 )}
                             </div>
 
