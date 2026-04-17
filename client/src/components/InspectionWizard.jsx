@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 import { useBeforeUnload } from '../hooks/useBeforeUnload';
-import { Camera, Check, AlertTriangle, XCircle, ArrowRight, Loader2, RotateCcw } from 'lucide-react';
+import PhotoLightbox from './ui/PhotoLightbox';
+import { Camera, Check, AlertTriangle, XCircle, ArrowRight, Loader2, RotateCcw, ZoomIn, Trash2 } from 'lucide-react';
 
 export default function InspectionWizard() {
     const { propertyId } = useParams();
@@ -32,6 +33,9 @@ export default function InspectionWizard() {
 
     // Debounce timers for comment auto-save
     const commentTimers = useRef({});
+
+    // Lightbox state — which photo (if any) is being viewed full-screen
+    const [lightboxSrc, setLightboxSrc] = useState(null);
 
     // Warn on tab-close / reload if there are unsaved answers in flight.
     // hasActiveUploads is true during photo upload; we also guard against
@@ -113,6 +117,22 @@ export default function InspectionWizard() {
             showToast('Entwurf konnte nicht geladen werden', 'error');
         }
     }, [authFetch, showToast]);
+
+    // Delete the existing draft, then start a fresh inspection.
+    const discardDraft = useCallback(async () => {
+        if (!existingDraft) return;
+        try {
+            const res = await authFetch(`/api/inspections/${existingDraft.id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Delete failed');
+            toast.success('Entwurf verworfen');
+            setExistingDraft(null);
+            setShowResumeDialog(false);
+            // Trigger createNewInspection via useEffect branch: clear
+            // the draft first so re-init picks the fresh path.
+        } catch {
+            toast.error('Entwurf konnte nicht gelöscht werden.');
+        }
+    }, [authFetch, existingDraft, toast]);
 
     // Create a new inspection
     const createNewInspection = useCallback(async () => {
@@ -329,22 +349,28 @@ export default function InspectionWizard() {
                     </p>
                     <div className="space-y-3">
                         <button
+                            type="button"
                             onClick={() => resumeDraft(existingDraft.id)}
-                            className="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all"
+                            className="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
                         >
                             Entwurf fortsetzen
                         </button>
                         <button
-                            onClick={createNewInspection}
-                            className="w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all"
+                            type="button"
+                            onClick={async () => {
+                                await discardDraft();
+                                await createNewInspection();
+                            }}
+                            className="w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
                         >
-                            Neue Prüfung starten
+                            Entwurf verwerfen &amp; neu starten
                         </button>
                         <button
+                            type="button"
                             onClick={() => navigate('/')}
-                            className="w-full text-gray-500 dark:text-gray-400 py-2 hover:text-gray-700 dark:hover:text-gray-200 transition"
+                            className="w-full text-gray-500 dark:text-gray-400 py-2 hover:text-gray-700 dark:hover:text-gray-200 transition focus:outline-none focus-visible:underline"
                         >
-                            Zurück
+                            Zurück zum Dashboard
                         </button>
                     </div>
                 </div>
@@ -366,6 +392,12 @@ export default function InspectionWizard() {
     return (
         <div className="pb-24 bg-gray-100/50 dark:bg-gray-950 min-h-screen">
             {/* Toasts are rendered globally via ToastProvider */}
+            <PhotoLightbox
+                src={lightboxSrc}
+                alt="Mangel-Foto in voller Größe"
+                open={lightboxSrc !== null}
+                onClose={() => setLightboxSrc(null)}
+            />
 
             {/* Header */}
             <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-10 border-b border-gray-200/50 dark:border-gray-800/50 px-4 py-3 flex items-center justify-between">
@@ -497,14 +529,43 @@ export default function InspectionWizard() {
                                     </label>
 
                                     {answer.photoUrl && (
-                                        <div className="relative">
-                                            <img
-                                                src={answer.photoUrl}
-                                                alt="Preview"
-                                                className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
-                                            />
-                                            <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-lg">
-                                                Hochgeladen
+                                        <div className="relative group">
+                                            <button
+                                                type="button"
+                                                onClick={() => setLightboxSrc(answer.photoUrl)}
+                                                aria-label="Foto vergrößern"
+                                                className="block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl"
+                                            >
+                                                <img
+                                                    src={answer.photoUrl}
+                                                    alt="Dokumentierter Mangel"
+                                                    className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
+                                                />
+                                                <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                    <ZoomIn className="text-white drop-shadow" size={28} />
+                                                </div>
+                                            </button>
+                                            <div className="absolute top-2 right-2 flex gap-1">
+                                                <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-lg">
+                                                    Hochgeladen
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setAnswers((prev) => {
+                                                            const updated = { ...prev, [item.id]: { ...prev[item.id], photoUrl: '' } };
+                                                            if (inspectionId && updated[item.id]?.status) {
+                                                                saveResult(inspectionId, item.id, updated[item.id]);
+                                                            }
+                                                            return updated;
+                                                        });
+                                                    }}
+                                                    aria-label="Foto entfernen"
+                                                    title="Foto entfernen"
+                                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/90 hover:bg-white text-red-600 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
                                             </div>
                                         </div>
                                     )}

@@ -293,4 +293,59 @@ router.post(
   }),
 );
 
+// Delete a DRAFT inspection. Completed inspections are part of the
+// audit trail and must not be deletable via this endpoint — a 409
+// response makes that constraint explicit.
+router.delete(
+  '/:id',
+  authenticateToken,
+  authorizeRoles('ADMIN', 'MANAGER', 'INSPECTOR'),
+  validateParams(idParamSchema),
+  asyncHandler(async (req, res) => {
+    const inspectionId = (req.validatedParams as IdParam).id;
+
+    const existing = await loadInspectionWithOrg(inspectionId);
+    if (!existing || !canAccessOrg(req.user, existing.property?.organizationId)) {
+      res.status(404).json({ error: 'Inspection not found' });
+      return;
+    }
+    if (existing.status !== 'DRAFT') {
+      res.status(409).json({ error: 'Only draft inspections can be deleted' });
+      return;
+    }
+
+    // Any DefectTracking rows that were auto-created by this draft
+    // point at inspectionResults we're about to delete. Clear those
+    // FK references first to avoid constraint violations, then drop
+    // the inspection and its results together.
+    await prisma.defectTracking.updateMany({
+      where: {
+        first_found_result: { inspection_id: inspectionId },
+        status: 'OPEN',
+      },
+      data: { status: 'RESOLVED' },
+    });
+    await prisma.defectTracking.deleteMany({
+      where: {
+        OR: [
+          { first_found_result: { inspection_id: inspectionId } },
+          { resolved_result: { inspection_id: inspectionId } },
+        ],
+      },
+    });
+    await prisma.inspectionResult.deleteMany({ where: { inspection_id: inspectionId } });
+    await prisma.inspection.delete({ where: { id: inspectionId } });
+
+    await createAuditEntry({
+      action: 'DELETE',
+      entityType: 'Inspection',
+      entityId: inspectionId,
+      ...getAuditContext(req),
+      previousData: { status: existing.status, propertyId: existing.property_id },
+    });
+    logger.info('Draft inspection deleted', { inspectionId, requestId: req.id });
+    res.json({ message: 'Draft deleted' });
+  }),
+);
+
 export default router;
