@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -28,6 +28,9 @@ model User {
   refreshTokens  RefreshToken[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+
+  @@index([organizationId])
+  @@index([role])
 }
 
 model RefreshToken {
@@ -37,6 +40,9 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Property {
@@ -50,6 +56,9 @@ model Property {
   defects        DefectTracking[]
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
+
+  @@index([organizationId])
+  @@index([createdAt])
 }
 
 model Inspection {
@@ -63,6 +72,11 @@ model Inspection {
   results         InspectionResult[]
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+
+  @@index([property_id])
+  @@index([status])
+  @@index([ended_at])
+  @@index([property_id, status])
 }
 
 model ChecklistCategory {
@@ -82,6 +96,8 @@ model ChecklistItem {
   results     InspectionResult[]
   defects     DefectTracking[]
   createdAt   DateTime          @default(now())
+
+  @@index([category_id])
 }
 
 model InspectionResult {
@@ -97,6 +113,10 @@ model InspectionResult {
   defectsResolved   DefectTracking[] @relation("DefectResolved")
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+
+  @@index([inspection_id])
+  @@index([checklist_item_id])
+  @@index([inspection_id, checklist_item_id])
 }
 
 model DefectTracking {
@@ -112,6 +132,13 @@ model DefectTracking {
   status                String           @default("OPEN") // OPEN, RESOLVED
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
+
+  @@index([property_id])
+  @@index([checklist_item_id])
+  @@index([status])
+  @@index([property_id, status])
+  @@index([first_found_result_id])
+  @@index([resolved_result_id])
 }
 
 model AuditLog {
@@ -125,4 +152,8 @@ model AuditLog {
   previousData String?  // JSON string of previous state
   newData      String?  // JSON string of new state
   timestamp    DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
 }
