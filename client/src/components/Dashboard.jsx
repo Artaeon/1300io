@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../hooks/useToast';
 import ConfirmDialog from './ui/ConfirmDialog';
+import { SkeletonPropertyCard } from './ui/Skeleton';
 import LegalFooter from './LegalFooter';
 
 // Helper: Check if inspection is within 1 year
@@ -161,13 +162,9 @@ export default function Dashboard() {
         window.scrollTo(0, 0);
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-100/50 dark:bg-gray-950">
-                <div className="animate-spin w-8 h-8 border-4 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full" />
-            </div>
-        );
-    }
+    // No full-screen spinner — the Dashboard shell renders immediately
+    // and the list area below shows skeleton cards while properties load.
+    // User perceives the app as responsive instead of blank-then-snap.
 
     return (
         <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 pb-24">
@@ -266,7 +263,13 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-4">
-                        {properties.map(prop => (
+                        {loading ? (
+                            <>
+                                <SkeletonPropertyCard />
+                                <SkeletonPropertyCard />
+                                <SkeletonPropertyCard />
+                            </>
+                        ) : properties.map(prop => (
                             <div key={prop.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
                                 <div className="p-5">
                                     {/* Status Badge & Actions */}
@@ -319,16 +322,31 @@ export default function Dashboard() {
                             </div>
                         ))}
 
-                        {properties.length === 0 && (
+                        {!loading && properties.length === 0 && (
                             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                                 <Building size={48} className="mx-auto mb-4 opacity-30" />
                                 {search ? (
-                                    <p>Keine Objekte gefunden für &ldquo;{search}&rdquo;</p>
+                                    <>
+                                        <p>Keine Objekte gefunden für &ldquo;{search}&rdquo;.</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSearchChange('')}
+                                            className="text-blue-600 dark:text-blue-400 font-medium mt-2"
+                                        >
+                                            Suche zurücksetzen
+                                        </button>
+                                    </>
                                 ) : (
                                     <>
-                                        <p>Noch keine Objekte vorhanden.</p>
-                                        <Link to="/properties/new" className="text-blue-600 dark:text-blue-400 font-medium mt-2 inline-block">
-                                            + Erstes Objekt hinzufügen
+                                        <p className="mb-1">Willkommen!</p>
+                                        <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">
+                                            Noch keine Objekte vorhanden. Legen Sie Ihr erstes Objekt an, um eine Prüfung zu starten.
+                                        </p>
+                                        <Link
+                                            to="/properties/new"
+                                            className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium"
+                                        >
+                                            <Plus size={16} /> Erstes Objekt anlegen
                                         </Link>
                                     </>
                                 )}
