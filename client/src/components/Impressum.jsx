@@ -28,8 +28,13 @@ export default function Impressum() {
                         <section>
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Kontakt</h2>
                             <p>
-                                E-Mail: <a href="mailto:office@stoicera.com" className="text-blue-600 dark:text-blue-400 hover:underline">office@stoicera.com</a><br />
-                                Telefon: +43 (0) XXX XXX XXX
+                                E-Mail: <a href="mailto:office@stoicera.com" className="text-blue-600 dark:text-blue-400 hover:underline">office@stoicera.com</a>
+                                {import.meta.env.VITE_IMPRESSUM_PHONE && (
+                                    <>
+                                        <br />
+                                        Telefon: {import.meta.env.VITE_IMPRESSUM_PHONE}
+                                    </>
+                                )}
                             </p>
                         </section>
 
