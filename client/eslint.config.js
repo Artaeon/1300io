@@ -26,14 +26,13 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      // Start accessibility gate as warnings so we can ratchet to
-      // error once the existing violations have been addressed. Don't
-      // want to block unrelated PRs on a retrofit.
-      'jsx-a11y/alt-text': 'warn',
-      'jsx-a11y/anchor-has-content': 'warn',
-      'jsx-a11y/anchor-is-valid': 'warn',
+      // Accessibility rules now enforced as errors. The initial retrofit
+      // (form labels + autoComplete) is complete; new code should match.
+      'jsx-a11y/alt-text': 'error',
+      'jsx-a11y/anchor-has-content': 'error',
+      'jsx-a11y/anchor-is-valid': 'error',
       'jsx-a11y/click-events-have-key-events': 'warn',
-      'jsx-a11y/label-has-associated-control': 'warn',
+      'jsx-a11y/label-has-associated-control': 'error',
       'jsx-a11y/no-static-element-interactions': 'warn',
     },
   },

@@ -9,7 +9,7 @@ function runEslint(subdir, files) {
   const relFiles = files.map(f => path.relative(abs, f)).join(' ');
   // Single-quote the whole shell command so the file list survives
   // lint-staged's parsing.
-  return `sh -c 'cd ${subdir} && ./node_modules/.bin/eslint --fix --max-warnings=20 ${relFiles}'`;
+  return `sh -c 'cd ${subdir} && ./node_modules/.bin/eslint --fix --max-warnings=0 ${relFiles}'`;
 }
 
 module.exports = {

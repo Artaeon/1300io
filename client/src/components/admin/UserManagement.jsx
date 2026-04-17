@@ -170,27 +170,35 @@ export default function UserManagement() {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                                <label htmlFor="user-name" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
                                 <input
-                                    type="text" required
+                                    id="user-name"
+                                    type="text"
+                                    autoComplete="name"
+                                    required
                                     className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                     value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</label>
+                                <label htmlFor="user-email" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</label>
                                 <input
-                                    type="email" required
+                                    id="user-email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
                                     className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                     value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                <label htmlFor="user-password" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                                     Passwort {editingUser && <span className="text-gray-400 dark:text-gray-500">(leer lassen = nicht ändern)</span>}
                                 </label>
                                 <input
+                                    id="user-password"
                                     type="password"
+                                    autoComplete="new-password"
                                     required={!editingUser}
                                     minLength={8}
                                     className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
@@ -198,8 +206,9 @@ export default function UserManagement() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rolle</label>
+                                <label htmlFor="user-role" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rolle</label>
                                 <select
+                                    id="user-role"
                                     className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                     value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                                 >

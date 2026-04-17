@@ -240,9 +240,11 @@ export default function OrganizationManagement() {
 
                         <form onSubmit={handleSave} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                                <label htmlFor="org-name" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
                                 <input
+                                    id="org-name"
                                     type="text"
+                                    autoComplete="organization"
                                     required
                                     className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                     value={name}

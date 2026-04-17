@@ -39,11 +39,13 @@ export default function AddProperty() {
 
             <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm">
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
+                    <label htmlFor="property-address" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
                         <Building size={16} className="mr-2" /> Adresse
                     </label>
                     <input
+                        id="property-address"
                         type="text"
+                        autoComplete="street-address"
                         required
                         placeholder="Musterstraße 1, 1010 Wien"
                         className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
@@ -53,11 +55,13 @@ export default function AddProperty() {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
+                    <label htmlFor="property-owner" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
                         <User size={16} className="mr-2" /> Eigentümer / Verwaltung
                     </label>
                     <input
+                        id="property-owner"
                         type="text"
+                        autoComplete="organization"
                         required
                         placeholder="ImmoTrust GmbH"
                         className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
@@ -67,11 +71,13 @@ export default function AddProperty() {
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
+                    <label htmlFor="property-units" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
                         <Layers size={16} className="mr-2" /> Einheiten
                     </label>
                     <input
+                        id="property-units"
                         type="number"
+                        min="1"
                         required
                         placeholder="10"
                         className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
