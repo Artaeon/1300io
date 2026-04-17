@@ -34,6 +34,7 @@ import inspectionRoutes from './routes/inspections';
 import checklistRoutes from './routes/checklist';
 import uploadRoutes from './routes/upload';
 import exportRoutes from './routes/exports';
+import setupRoutes from './routes/setup';
 
 validateConfig();
 
@@ -149,6 +150,7 @@ app.get(
 // credential-stuffing across rotating IPs).
 app.use('/api/auth/login', loginLimiter, checkLockout);
 app.use('/api/auth', authRoutes);
+app.use('/api/setup', setupRoutes);
 
 // Swagger UI needs inline script/style; relax CSP just for /api/docs.
 app.use('/api/docs', (_req: Request, res: Response, next: NextFunction) => {
