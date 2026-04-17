@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, UserPlus, Loader2, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, ShieldCheck, Moon, Sun } from 'lucide-react';
+import { Building2, UserPlus, Loader2, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, ShieldCheck, Moon, Sun, Eye, EyeOff, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import Logo from './Logo';
@@ -284,11 +284,18 @@ function WelcomeStep() {
     );
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function AdminStep({ name, setName, email, setEmail, password, setPassword, confirm, setConfirm, error, disabled }) {
+    const nameValid = name.trim().length > 0;
+    const emailValid = EMAIL_RE.test(email);
+    const passwordOk = password.length >= 12;
+    const confirmValid = confirm.length > 0 && confirm === password;
+
     return (
         <div>
             <div className="flex justify-center mb-4">
-                <div className="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-full">
+                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl shadow-sm">
                     <UserPlus size={32} className="text-blue-600 dark:text-blue-400" />
                 </div>
             </div>
@@ -301,16 +308,21 @@ function AdminStep({ name, setName, email, setEmail, password, setPassword, conf
 
             <div className="space-y-4">
                 <Field id="setup-admin-name" label="Name" value={name} onChange={setName}
-                    autoComplete="name" disabled={disabled} />
+                    autoComplete="name" disabled={disabled} valid={nameValid} />
                 <Field id="setup-admin-email" label="E-Mail" type="email" value={email} onChange={setEmail}
-                    autoComplete="email" disabled={disabled} />
-                <Field id="setup-admin-password" label="Passwort (min. 12 Zeichen)" type="password" value={password}
-                    onChange={setPassword} autoComplete="new-password" disabled={disabled} />
-                <Field id="setup-admin-confirm" label="Passwort wiederholen" type="password" value={confirm}
+                    autoComplete="email" disabled={disabled} valid={emailValid} />
+                <PasswordField id="setup-admin-password" label="Passwort (min. 12 Zeichen)" value={password}
+                    onChange={setPassword} autoComplete="new-password" disabled={disabled} showStrength />
+                <PasswordField id="setup-admin-confirm" label="Passwort wiederholen" value={confirm}
                     onChange={setConfirm} autoComplete="new-password" disabled={disabled} />
+                {passwordOk && confirm && !confirmValid && (
+                    <p role="alert" className="text-xs text-red-500 dark:text-red-400 animate-fade-in">
+                        Passwörter stimmen nicht überein.
+                    </p>
+                )}
 
                 {error && (
-                    <p role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</p>
+                    <p role="alert" className="text-xs text-red-600 dark:text-red-400 animate-fade-in">{error}</p>
                 )}
             </div>
         </div>
@@ -318,10 +330,11 @@ function AdminStep({ name, setName, email, setEmail, password, setPassword, conf
 }
 
 function OrgStep({ name, setName, error, disabled }) {
+    const nameValid = name.trim().length > 0;
     return (
         <div>
             <div className="flex justify-center mb-4">
-                <div className="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-full">
+                <div className="bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 p-3 rounded-2xl shadow-sm">
                     <Building2 size={32} className="text-blue-600 dark:text-blue-400" />
                 </div>
             </div>
@@ -333,30 +346,137 @@ function OrgStep({ name, setName, error, disabled }) {
             </p>
 
             <Field id="setup-org-name" label="Name der Hausverwaltung" value={name} onChange={setName}
-                autoComplete="organization" disabled={disabled} />
+                autoComplete="organization" disabled={disabled} valid={nameValid} />
 
             {error && (
-                <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">{error}</p>
+                <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400 animate-fade-in">{error}</p>
             )}
         </div>
     );
 }
 
-function Field({ id, label, type = 'text', value, onChange, autoComplete, disabled }) {
+function Field({ id, label, type = 'text', value, onChange, autoComplete, disabled, valid }) {
     return (
         <div>
             <label htmlFor={id} className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                 {label}
             </label>
-            <input
-                id={id}
-                type={type}
-                autoComplete={autoComplete}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                disabled={disabled}
-                className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none disabled:opacity-60"
-            />
+            <div className="relative">
+                <input
+                    id={id}
+                    type={type}
+                    autoComplete={autoComplete}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    disabled={disabled}
+                    className={[
+                        'w-full p-3 pr-10 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 outline-none transition-all disabled:opacity-60',
+                        valid
+                            ? 'ring-2 ring-green-400/60 dark:ring-green-500/60 focus:ring-green-500'
+                            : 'focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400',
+                    ].join(' ')}
+                />
+                {valid && (
+                    <span
+                        aria-hidden="true"
+                        className="absolute inset-y-0 right-3 flex items-center text-green-500 dark:text-green-400 animate-pop-in"
+                    >
+                        <Check size={18} />
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+// --- Password strength helpers ----------------------------------------
+
+function computePasswordStrength(pw) {
+    if (!pw) return { score: 0, label: '', tone: '' };
+    let score = 0;
+    if (pw.length >= 12) score += 1;
+    if (pw.length >= 16) score += 1;
+    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
+    if (/\d/.test(pw)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+    if (pw.length < 12) score = Math.min(score, 1);
+    score = Math.min(score, 4);
+    const labels = ['', 'Schwach', 'Akzeptabel', 'Gut', 'Stark'];
+    const tones = [
+        '',
+        'bg-red-500',
+        'bg-yellow-500',
+        'bg-emerald-500',
+        'bg-green-500',
+    ];
+    return { score, label: labels[score], tone: tones[score] };
+}
+
+function PasswordField({ id, label, value, onChange, autoComplete, disabled, showStrength }) {
+    const [visible, setVisible] = useState(false);
+    const [capsLock, setCapsLock] = useState(false);
+    const { score, label: strengthLabel, tone } = computePasswordStrength(value);
+
+    return (
+        <div>
+            <label htmlFor={id} className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                {label}
+            </label>
+            <div className="relative">
+                <input
+                    id={id}
+                    type={visible ? 'text' : 'password'}
+                    autoComplete={autoComplete}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onKeyUp={(e) => setCapsLock(e.getModifierState?.('CapsLock') ?? false)}
+                    onKeyDown={(e) => setCapsLock(e.getModifierState?.('CapsLock') ?? false)}
+                    onBlur={() => setCapsLock(false)}
+                    disabled={disabled}
+                    className="w-full p-3 pr-11 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none transition-all disabled:opacity-60"
+                />
+                <button
+                    type="button"
+                    onClick={() => setVisible((v) => !v)}
+                    aria-label={visible ? 'Passwort ausblenden' : 'Passwort einblenden'}
+                    tabIndex={-1}
+                    className="absolute inset-y-0 right-2 flex items-center p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200/60 dark:hover:bg-gray-700/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                    {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+            </div>
+
+            {capsLock && (
+                <p role="alert" className="mt-1.5 text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 animate-fade-in">
+                    <AlertTriangle size={12} /> Feststelltaste ist aktiv.
+                </p>
+            )}
+
+            {showStrength && value && (
+                <div className="mt-2 animate-fade-in">
+                    <div className="flex gap-1">
+                        {[1, 2, 3, 4].map((i) => (
+                            <div
+                                key={i}
+                                className={[
+                                    'h-1.5 flex-1 rounded-full transition-colors duration-300',
+                                    i <= score ? tone : 'bg-gray-200 dark:bg-gray-800',
+                                ].join(' ')}
+                            />
+                        ))}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
+                        <span>Passwortstärke</span>
+                        <span className={[
+                            'font-semibold',
+                            score <= 1 ? 'text-red-500' :
+                            score === 2 ? 'text-yellow-600 dark:text-yellow-400' :
+                            score === 3 ? 'text-emerald-600 dark:text-emerald-400' :
+                            'text-green-600 dark:text-green-400',
+                        ].join(' ')}>{strengthLabel}</span>
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
