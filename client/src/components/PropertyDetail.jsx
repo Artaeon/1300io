@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../hooks/useToast';
 import { ArrowLeft, Building, MapPin, AlertTriangle, CheckCircle2, Clock, Loader2, FileText, Download, QrCode } from 'lucide-react';
 
 export default function PropertyDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { authFetch } = useAuth();
+    const { toast } = useToast();
 
     const [property, setProperty] = useState(null);
     const [defects, setDefects] = useState([]);
@@ -68,7 +70,9 @@ export default function PropertyDetail() {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
         } catch {
-            alert('PDF Download fehlgeschlagen.');
+            toast.error('PDF-Download fehlgeschlagen. Bitte erneut versuchen.', {
+                action: { label: 'Erneut', onClick: () => handleDownloadPDF(inspectionId) },
+            });
         }
     };
 

@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { CheckCircle, FileText, Home, Download, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../hooks/useToast';
 
 export default function InspectionFinish() {
     const { id } = useParams();
     const { authFetch } = useAuth();
+    const { toast } = useToast();
     const [isCompleting, setIsCompleting] = useState(true);
     const [isDownloading, setIsDownloading] = useState(false);
     const [inspection, setInspection] = useState(null);
@@ -63,11 +65,13 @@ export default function InspectionFinish() {
 
         } catch (err) {
             console.error('PDF download failed:', err);
-            alert('PDF konnte nicht heruntergeladen werden. Bitte versuchen Sie es erneut.');
+            toast.error('PDF konnte nicht heruntergeladen werden.', {
+                action: { label: 'Erneut', onClick: () => handleDownloadPDF() },
+            });
         } finally {
             setIsDownloading(false);
         }
-    }, [id, authFetch]);
+    }, [id, authFetch, toast]);
 
     if (isCompleting) {
         return (

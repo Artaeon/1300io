@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, Pencil, Trash2, X, Loader2 } from 'lucide-react';
+import { useToast } from '../../hooks/useToast';
+import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import AdminLayout from './AdminLayout';
+import Modal from '../ui/Modal';
+import ConfirmDialog from '../ui/ConfirmDialog';
 
 const ROLES = ['ADMIN', 'MANAGER', 'INSPECTOR', 'READONLY'];
 const ROLE_LABELS = { ADMIN: 'Admin', MANAGER: 'Manager', INSPECTOR: 'Prüfer', READONLY: 'Nur Lesen' };
@@ -16,6 +19,7 @@ const emptyForm = { email: '', password: '', name: '', role: 'INSPECTOR' };
 
 export default function UserManagement() {
     const { authFetch } = useAuth();
+    const { toast } = useToast();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -71,10 +75,11 @@ export default function UserManagement() {
 
             if (res.ok) {
                 setShowModal(false);
+                toast.success(editingUser ? 'Benutzer aktualisiert' : 'Benutzer angelegt');
                 fetchUsers();
             } else {
-                const data = await res.json();
-                setError(data.error || data.details?.join(', ') || 'Fehler');
+                const data = await res.json().catch(() => ({}));
+                setError(data.error || data.details?.join(', ') || 'Fehler beim Speichern');
             }
         } catch {
             setError('Verbindungsfehler');
@@ -84,19 +89,19 @@ export default function UserManagement() {
     };
 
     const handleDelete = async (userId) => {
-        try {
-            const res = await authFetch(`/api/users/${userId}`, { method: 'DELETE' });
-            if (res.ok) {
-                setUsers(prev => prev.filter(u => u.id !== userId));
-            } else {
-                const data = await res.json();
-                alert(data.error || 'Löschen fehlgeschlagen');
-            }
-        } catch {
-            alert('Verbindungsfehler');
-        } finally {
-            setDeleteConfirm(null);
+        const res = await authFetch(`/api/users/${userId}`, { method: 'DELETE' });
+        if (res.ok) {
+            setUsers(prev => prev.filter(u => u.id !== userId));
+            toast.success('Benutzer gelöscht');
+            return;
         }
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 400 && data.error?.includes('own account')) {
+            toast.error('Sie können Ihr eigenes Konto nicht löschen.');
+        } else {
+            toast.error(data.error || 'Löschen fehlgeschlagen');
+        }
+        throw new Error('delete-failed');
     };
 
     return (
@@ -154,102 +159,103 @@ export default function UserManagement() {
             )}
 
             {/* Create/Edit Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                                {editingUser ? 'Benutzer bearbeiten' : 'Neuer Benutzer'}
-                            </h3>
-                            <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-sm">{error}</div>}
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label htmlFor="user-name" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
-                                <input
-                                    id="user-name"
-                                    type="text"
-                                    autoComplete="name"
-                                    required
-                                    className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                                    value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="user-email" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</label>
-                                <input
-                                    id="user-email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
-                                    className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                                    value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="user-password" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                    Passwort {editingUser && <span className="text-gray-400 dark:text-gray-500">(leer lassen = nicht ändern)</span>}
-                                </label>
-                                <input
-                                    id="user-password"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    required={!editingUser}
-                                    minLength={12}
-                                    title="Mindestens 12 Zeichen, Groß- und Kleinbuchstaben sowie eine Ziffer"
-                                    className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                                    value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="user-role" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rolle</label>
-                                <select
-                                    id="user-role"
-                                    className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                                    value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-                                >
-                                    {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
-                                </select>
-                            </div>
-                            <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowModal(false)}
-                                    className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all">
-                                    Abbrechen
-                                </button>
-                                <button type="submit" disabled={saving}
-                                    className="flex-1 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 active:scale-[0.98] transition-all">
-                                    {saving ? 'Speichern...' : 'Speichern'}
-                                </button>
-                            </div>
-                        </form>
+            <Modal
+                open={showModal}
+                onClose={() => setShowModal(false)}
+                title={editingUser ? 'Benutzer bearbeiten' : 'Neuer Benutzer'}
+            >
+                {error && (
+                    <div role="alert" className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl mb-4 text-sm">
+                        {error}
                     </div>
-                </div>
-            )}
+                )}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label htmlFor="user-name" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                        <input
+                            id="user-name"
+                            type="text"
+                            autoComplete="name"
+                            required
+                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="user-email" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</label>
+                        <input
+                            id="user-email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="user-password" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                            Passwort {editingUser && <span className="text-gray-400 dark:text-gray-500">(leer lassen = nicht ändern)</span>}
+                        </label>
+                        <input
+                            id="user-password"
+                            type="password"
+                            autoComplete="new-password"
+                            required={!editingUser}
+                            minLength={12}
+                            title="Mindestens 12 Zeichen, Groß- und Kleinbuchstaben sowie eine Ziffer"
+                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                        />
+                        {!editingUser && (
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+                                Mindestens 12 Zeichen, Groß- und Kleinbuchstaben sowie eine Ziffer.
+                            </p>
+                        )}
+                    </div>
+                    <div>
+                        <label htmlFor="user-role" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rolle</label>
+                        <select
+                            id="user-role"
+                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+                        >
+                            {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={() => setShowModal(false)}
+                            className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all">
+                            Abbrechen
+                        </button>
+                        <button type="submit" disabled={saving}
+                            className="flex-1 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            {saving && <Loader2 size={16} className="animate-spin" />}
+                            {saving ? 'Speichern…' : 'Speichern'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
 
             {/* Delete Confirmation */}
-            {deleteConfirm && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Benutzer löschen?</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">Diese Aktion kann nicht rückgängig gemacht werden.</p>
-                        <div className="flex gap-3">
-                            <button onClick={() => setDeleteConfirm(null)}
-                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all">
-                                Abbrechen
-                            </button>
-                            <button onClick={() => handleDelete(deleteConfirm)}
-                                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 active:scale-[0.98] transition-all">
-                                Löschen
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmDialog
+                open={deleteConfirm !== null}
+                onClose={() => setDeleteConfirm(null)}
+                title="Benutzer löschen?"
+                message={
+                    <>
+                        <p>
+                            Sind Sie sicher, dass Sie{' '}
+                            <strong>{users.find(u => u.id === deleteConfirm)?.name ?? 'diesen Benutzer'}</strong> löschen möchten?
+                        </p>
+                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                            Der Benutzer verliert sofort den Zugriff. Prüfungsprotokolle bleiben im Audit-Log erhalten.
+                        </p>
+                    </>
+                }
+                confirmLabel="Löschen"
+                destructive
+                onConfirm={() => handleDelete(deleteConfirm)}
+            />
         </AdminLayout>
     );
 }
