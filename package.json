@@ -15,10 +15,6 @@
     "build": "cd client && npm run build",
     "prepare": "husky"
   },
-  "lint-staged": {
-    "server/**/*.js": "eslint --fix --max-warnings=0",
-    "client/**/*.{js,jsx}": "eslint --fix --max-warnings=0"
-  },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2"
