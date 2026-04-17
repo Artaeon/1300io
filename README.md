@@ -87,10 +87,10 @@
 ┌─────────────────┐         ┌─────────────────┐         ┌─────────────────┐
 │     Client       │         │     Server       │         │    Database      │
 │                  │         │                  │         │                  │
-│  React 19        │  REST   │  Express 5       │  ORM    │  SQLite (dev)    │
-│  Vite 7          │◄───────►│  Prisma          │◄───────►│  PostgreSQL      │
-│  Tailwind CSS 4  │  JSON   │  JWT Auth        │         │  (production)    │
-│                  │         │  PDFKit          │         │                  │
+│  React 19        │  REST   │  Express 5       │  ORM    │  PostgreSQL 16   │
+│  Vite 7          │◄───────►│  Prisma          │◄───────►│  (dev + prod)    │
+│  Tailwind CSS 4  │  JSON   │  JWT Auth        │         │                  │
+│                  │         │  PDFKit, Sharp   │         │                  │
 └─────────────────┘         └─────────────────┘         └─────────────────┘
        :5173                       :3000
 ```
@@ -100,7 +100,16 @@ The project is organized as a monorepo with two packages:
 | Package | Stack | Purpose |
 |---------|-------|---------|
 | `client/` | React 19, Vite 7, Tailwind CSS 4 | Mobile-first SPA with iOS-style UI and dark mode |
-| `server/` | Express 5, Prisma ORM, PDFKit | REST API, JWT auth, PDF generation, file uploads |
+| `server/` | Express 5, Prisma ORM, PDFKit, Sharp | REST API, JWT auth, PDF generation, image optimization |
+
+### Further reading
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — request lifecycle, data model, extension points
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — production deploy with docker-compose and GHCR
+- [docs/RUNBOOK.md](docs/RUNBOOK.md) — logs, metrics, backups, secret rotation, incident response
+- [SECURITY.md](SECURITY.md) — vulnerability disclosure
+- [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup and code style
+- API docs: `/api/docs` (Swagger UI) and `/api/openapi.json` (raw spec) once the server is running
 
 ---
 
