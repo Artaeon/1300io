@@ -5,6 +5,7 @@ import type { NextFunction, Request, Response } from 'express';
 import logger from './logger';
 import { config, validateConfig, isProduction } from './config';
 import prisma from './lib/prisma';
+import { release } from './lib/version';
 
 import { asyncHandler, errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
@@ -65,6 +66,10 @@ app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(uploadDir));
 
 // --- Health + metrics ---
+// /health, /healthz, /readyz are distinct on purpose:
+//   /healthz  → liveness (always cheap, no DB)
+//   /readyz   → readiness (verifies DB + flips 503 on shutdown)
+//   /health   → human-friendly bundle of both plus release metadata
 app.get('/', (_req, res) => {
   res.json({ name: '1300.io API', status: 'running' });
 });
@@ -88,10 +93,33 @@ app.get(
 app.get(
   '/health',
   asyncHandler(async (_req, res) => {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: 'ok', db: 'connected' });
+    const started = new Date(release.startedAt).getTime();
+    const uptimeSeconds = Math.floor((Date.now() - started) / 1000);
+    let db = 'unknown';
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      db = 'connected';
+    } catch {
+      db = 'down';
+    }
+    res.json({
+      status: db === 'connected' ? 'ok' : 'degraded',
+      db,
+      version: release.version,
+      sha: release.sha,
+      nodeEnv: release.nodeEnv,
+      startedAt: release.startedAt,
+      uptimeSeconds,
+    });
   }),
 );
+
+// Public version endpoint — used by the client footer to show which
+// build users are running (useful for support tickets). No DB touch
+// and no auth so it's cheap to scrape.
+app.get('/api/version', (_req, res) => {
+  res.json({ version: release.version, sha: release.sha });
+});
 
 app.get(
   '/metrics',
