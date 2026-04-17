@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+import { ToastProvider } from '../context/ToastContext';
+
+const wrap = (ui) => (
+  <ToastProvider>
+    <AuthProvider>{ui}</AuthProvider>
+  </ToastProvider>
+);
 
 function TestComponent() {
   const { user, token, login, logout } = useAuth();
@@ -21,31 +28,19 @@ describe('AuthContext', () => {
   });
 
   it('should start with no user and no token', () => {
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
+    render(wrap(<TestComponent />));
     expect(screen.getByTestId('token').textContent).toBe('null');
   });
 
   it('should load token from localStorage on mount', () => {
     localStorage.setItem('token', 'existing-token');
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
+    render(wrap(<TestComponent />));
     expect(screen.getByTestId('token').textContent).toBe('existing-token');
   });
 
   it('should clear user and token on logout', async () => {
     localStorage.setItem('token', 'existing-token');
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
+    render(wrap(<TestComponent />));
 
     await act(async () => {
       screen.getByTestId('logout').click();
@@ -66,11 +61,7 @@ describe('AuthContext', () => {
       }),
     });
 
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
+    render(wrap(<TestComponent />));
 
     await act(async () => {
       screen.getByTestId('login').click();
@@ -87,11 +78,7 @@ describe('AuthContext', () => {
       status: 401,
     });
 
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    );
+    render(wrap(<TestComponent />));
 
     await act(async () => {
       screen.getByTestId('login').click();
