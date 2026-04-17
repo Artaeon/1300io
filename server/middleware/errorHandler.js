@@ -8,32 +8,55 @@ function asyncHandler(fn) {
   };
 }
 
+// 404 catch-all — must be registered after all routes, before errorHandler
+function notFoundHandler(req, res) {
+  res.status(404).json({
+    error: 'Not found',
+    path: req.originalUrl,
+    requestId: req.id,
+  });
+}
+
 // Centralized error handler -- must be registered last in the middleware chain
 function errorHandler(err, req, res, _next) {
-  logger.error(`${req.method} ${req.path}: ${err.message}`);
+  const statusCode = err.statusCode || err.status || 500;
 
-  if (!isProduction) {
-    logger.debug('Stack trace', { stack: err.stack });
+  const logContext = {
+    requestId: req.id,
+    userId: req.user?.userId,
+    method: req.method,
+    path: req.originalUrl,
+    status: statusCode,
+    ip: req.ip,
+  };
+
+  if (statusCode >= 500) {
+    logger.error(`Unhandled error: ${err.message}`, { ...logContext, stack: err.stack });
+  } else {
+    logger.warn(`Request error: ${err.message}`, logContext);
   }
 
   // Multer file size error
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: 'File too large. Maximum size is 10MB.' });
+    return res.status(413).json({ error: 'File too large. Maximum size is 10MB.', requestId: req.id });
   }
 
   // Multer unexpected field
   if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-    return res.status(400).json({ error: 'Unexpected file field.' });
+    return res.status(400).json({ error: 'Unexpected file field.', requestId: req.id });
   }
 
-  const statusCode = err.statusCode || 500;
-  const response = { error: err.expose ? err.message : 'Internal server error' };
+  const response = {
+    error: err.expose || statusCode < 500 ? err.message : 'Internal server error',
+    requestId: req.id,
+  };
 
-  if (!isProduction && err.message) {
+  if (!isProduction && statusCode >= 500) {
     response.details = err.message;
+    response.stack = err.stack;
   }
 
   res.status(statusCode).json(response);
 }
 
-module.exports = { asyncHandler, errorHandler };
+module.exports = { asyncHandler, errorHandler, notFoundHandler };

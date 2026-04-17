@@ -12,7 +12,8 @@ const QRCode = require('qrcode');
 
 const logger = require('./logger');
 const { config, validateConfig, isProduction } = require('./config');
-const { asyncHandler, errorHandler } = require('./middleware/errorHandler');
+const { asyncHandler, errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { requestId } = require('./middleware/requestId');
 const { createAuditEntry, getAuditContext } = require('./audit');
 const bcrypt = require('bcryptjs');
 const {
@@ -46,6 +47,12 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // --- Security middleware ---
+
+// Trust one upstream proxy (nginx/LB); needed so req.ip + X-Forwarded-Proto
+// reflect the real client. Keep this tight — 'true' trusts any hop count.
+app.set('trust proxy', 1);
+
+app.use(requestId);
 
 app.use(helmet());
 app.disable('x-powered-by');
@@ -1044,6 +1051,9 @@ app.get('/api/inspections/:id/pdf', authenticateToken, pdfLimiter, validateParam
   doc.end();
   logger.info('PDF report generated', { inspectionId: inspection.id });
 }));
+
+// --- 404 catch-all (must come after all routes, before errorHandler) ---
+app.use(notFoundHandler);
 
 // --- Error handler (must be last) ---
 app.use(errorHandler);
