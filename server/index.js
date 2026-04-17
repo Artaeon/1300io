@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
@@ -14,6 +13,7 @@ const logger = require('./logger');
 const { config, validateConfig, isProduction } = require('./config');
 const { asyncHandler, errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { requestId } = require('./middleware/requestId');
+const { enforceHttps, securityHeaders } = require('./middleware/security');
 const { createAuditEntry, getAuditContext } = require('./audit');
 const bcrypt = require('bcryptjs');
 const {
@@ -53,8 +53,8 @@ if (!fs.existsSync(uploadDir)) {
 app.set('trust proxy', 1);
 
 app.use(requestId);
-
-app.use(helmet());
+app.use(enforceHttps);
+app.use(securityHeaders());
 app.disable('x-powered-by');
 
 app.use(cors({
