@@ -312,34 +312,46 @@ function StepIndicator({ step, total }) {
 }
 
 function WelcomeStep() {
+    const items = [
+        { Icon: UserPlus, title: 'Admin-Konto', body: 'Ihr persönlicher Zugang mit vollen Rechten.' },
+        { Icon: Building2, title: 'Organisation', body: 'Name Ihrer Hausverwaltung für Berichte.' },
+        { Icon: CheckCircle, title: 'Einsatzbereit', body: 'Direkt loslegen mit Ihrer ersten Prüfung.' },
+    ];
     return (
         <div className="text-center">
             <div className="flex justify-center mb-5">
-                <div className="bg-blue-100 dark:bg-blue-900/40 p-4 rounded-full">
-                    <ShieldCheck size={40} className="text-blue-600 dark:text-blue-400" />
+                <div className="relative">
+                    <div className="absolute inset-0 rounded-2xl animate-pulse-ring" />
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-2xl shadow-lg">
+                        <ShieldCheck size={40} className="text-white" />
+                    </div>
                 </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                 Willkommen bei 1300.io
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Sie richten gerade Ihre Instanz ein. In drei kurzen Schritten legen wir Ihr Admin-Konto und Ihre Organisation an.
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-5">
+                In drei kurzen Schritten ist Ihre Instanz einsatzbereit.
             </p>
-            <ul className="text-sm text-left text-gray-600 dark:text-gray-400 space-y-2 bg-gray-50 dark:bg-gray-800/60 rounded-xl p-4">
-                <li className="flex items-start gap-2">
-                    <span className="text-blue-600 dark:text-blue-400 font-bold mt-0.5">1.</span>
-                    <span>Admin-Konto — Ihre Zugangsdaten</span>
-                </li>
-                <li className="flex items-start gap-2">
-                    <span className="text-blue-600 dark:text-blue-400 font-bold mt-0.5">2.</span>
-                    <span>Organisation — Name Ihrer Hausverwaltung</span>
-                </li>
-                <li className="flex items-start gap-2">
-                    <span className="text-blue-600 dark:text-blue-400 font-bold mt-0.5">3.</span>
-                    <span>Fertig — direkt einsatzbereit</span>
-                </li>
+            <ul className="text-left space-y-2">
+                {/* eslint-disable-next-line no-unused-vars */}
+                {items.map(({ Icon, title, body }, i) => (
+                    <li
+                        key={title}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 ring-1 ring-gray-100 dark:ring-gray-800 animate-fade-in-right"
+                        style={{ animationDelay: `${80 + i * 80}ms` }}
+                    >
+                        <div className="shrink-0 w-9 h-9 rounded-lg bg-white dark:bg-gray-900 shadow-sm flex items-center justify-center text-blue-600 dark:text-blue-400">
+                            <Icon size={18} />
+                        </div>
+                        <div>
+                            <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">{title}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">{body}</div>
+                        </div>
+                    </li>
+                ))}
             </ul>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-4">
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-5">
                 Diese Seite erscheint nur bei der ersten Inbetriebnahme.
             </p>
         </div>
