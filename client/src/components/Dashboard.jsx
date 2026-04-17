@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Building, MapPin, Plus, LogOut, FileText, Clock, CheckCircle2, AlertCircle, Download, Pencil, Trash2, Settings, Search, ChevronLeft, ChevronRight, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../hooks/useToast';
+import ConfirmDialog from './ui/ConfirmDialog';
 import LegalFooter from './LegalFooter';
 
 // Helper: Check if inspection is within 1 year
@@ -54,13 +56,12 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const { user, logout, authFetch } = useAuth();
     const { dark, toggleTheme } = useTheme();
+    const { toast } = useToast();
     const searchTimer = useRef(null);
 
     const [deleteConfirm, setDeleteConfirm] = useState(null);
-    const [deleting, setDeleting] = useState(false);
 
     const handleDeleteProperty = useCallback(async (propertyId) => {
-        setDeleting(true);
         try {
             const res = await authFetch(`/api/properties/${propertyId}`, {
                 method: 'DELETE'
@@ -68,17 +69,22 @@ export default function Dashboard() {
             if (res.ok) {
                 setProperties(prev => prev.filter(p => p.id !== propertyId));
                 setTotalProperties(prev => prev - 1);
+                toast.success('Objekt gelöscht');
+            } else if (res.status === 409) {
+                toast.error('Objekt kann nicht gelöscht werden: offene Prüfung vorhanden');
+                throw new Error('conflict');
             } else {
-                const data = await res.json();
-                alert(data.error || 'Löschen fehlgeschlagen');
+                const data = await res.json().catch(() => ({}));
+                toast.error(data.error || 'Löschen fehlgeschlagen');
+                throw new Error('delete-failed');
             }
-        } catch {
-            alert('Verbindungsfehler');
-        } finally {
-            setDeleting(false);
-            setDeleteConfirm(null);
+        } catch (err) {
+            if (err?.message !== 'conflict' && err?.message !== 'delete-failed') {
+                toast.error('Verbindungsfehler. Bitte erneut versuchen.');
+            }
+            throw err; // keep ConfirmDialog open so user sees what happened
         }
-    }, [authFetch]);
+    }, [authFetch, toast]);
 
     // PDF Download helper
     const handleDownloadPDF = useCallback(async (inspectionId) => {
@@ -98,9 +104,11 @@ export default function Dashboard() {
             document.body.removeChild(a);
         } catch (err) {
             console.error('PDF download failed:', err);
-            alert('PDF Download fehlgeschlagen.');
+            toast.error('PDF-Download fehlgeschlagen. Bitte erneut versuchen.', {
+                action: { label: 'Erneut', onClick: () => handleDownloadPDF(inspectionId) },
+            });
         }
-    }, [authFetch]);
+    }, [authFetch, toast]);
 
     const fetchProperties = useCallback(async (currentPage, searchTerm) => {
         try {
@@ -353,32 +361,25 @@ export default function Dashboard() {
                 </section>
             </div>
 
-            {/* Delete Confirmation Dialog */}
-            {deleteConfirm && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Objekt löschen?</h3>
-                        <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            Diese Aktion löscht das Objekt und alle zugehörigen Prüfungen unwiderruflich.
+            {/* Delete Confirmation */}
+            <ConfirmDialog
+                open={deleteConfirm !== null}
+                onClose={() => setDeleteConfirm(null)}
+                title="Objekt löschen?"
+                message={
+                    <>
+                        <p>
+                            Sind Sie sicher, dass Sie <strong>{properties.find(p => p.id === deleteConfirm)?.address ?? 'dieses Objekt'}</strong> löschen möchten?
                         </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setDeleteConfirm(null)}
-                                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all"
-                            >
-                                Abbrechen
-                            </button>
-                            <button
-                                onClick={() => handleDeleteProperty(deleteConfirm)}
-                                disabled={deleting}
-                                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 disabled:bg-gray-400 active:scale-[0.98] transition-all"
-                            >
-                                {deleting ? 'Löschen...' : 'Löschen'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                        <p className="mt-2 text-gray-500 dark:text-gray-500 text-xs">
+                            Das Objekt und alle zugehörigen abgeschlossenen Prüfungen werden unwiderruflich entfernt. Offene (Entwurfs-) Prüfungen blockieren das Löschen.
+                        </p>
+                    </>
+                }
+                confirmLabel="Löschen"
+                destructive
+                onConfirm={() => handleDeleteProperty(deleteConfirm)}
+            />
 
             {/* FAB - Add Property */}
             <Link
