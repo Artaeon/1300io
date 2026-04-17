@@ -13,9 +13,12 @@
     "lint:server": "cd server && npm run lint",
     "lint:client": "cd client && npm run lint",
     "build": "cd client && npm run build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2"
   },

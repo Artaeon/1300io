@@ -41,6 +41,11 @@ server/uploads/*
 # Test coverage
 coverage/
 
+# Playwright
+e2e-report/
+test-results/
+playwright/.cache/
+
 # Temporary files
 *.tmp
 *.temp
