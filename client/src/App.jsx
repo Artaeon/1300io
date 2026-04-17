@@ -14,6 +14,10 @@ import AuditLogs from './components/admin/AuditLogs';
 import Impressum from './components/Impressum';
 import Datenschutz from './components/Datenschutz';
 import AGB from './components/AGB';
+import VerifyEmail from './components/VerifyEmail';
+import RequestVerification from './components/RequestVerification';
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 import NotFound from './components/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
 import CookieBanner from './components/CookieBanner';
@@ -49,6 +53,10 @@ function App() {
               <main id="main-content">
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/request-verification" element={<RequestVerification />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/impressum" element={<Impressum />} />
                 <Route path="/datenschutz" element={<Datenschutz />} />
                 <Route path="/agb" element={<AGB />} />

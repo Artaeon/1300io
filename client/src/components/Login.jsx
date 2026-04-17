@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth, LoginError } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Loader2 } from 'lucide-react';
 import LegalFooter from './LegalFooter';
 
@@ -95,6 +95,21 @@ export default function Login() {
                             {loading ? 'Anmeldung läuft…' : 'Einloggen'}
                         </button>
                     </form>
+
+                    <div className="mt-5 flex justify-between text-sm">
+                        <Link
+                            to="/forgot-password"
+                            className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus-visible:underline"
+                        >
+                            Passwort vergessen?
+                        </Link>
+                        <Link
+                            to="/request-verification"
+                            className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 focus:outline-none focus-visible:underline"
+                        >
+                            E-Mail bestätigen
+                        </Link>
+                    </div>
                 </div>
             </div>
             <LegalFooter />
