@@ -3,12 +3,10 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../lib/prisma');
 const { config } = require('../config');
 const { registerSchema, loginSchema, validateBody } = require('../schemas');
 const { asyncHandler } = require('../middleware/errorHandler');
-
-const prisma = new PrismaClient();
 
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
