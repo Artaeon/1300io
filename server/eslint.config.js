@@ -31,6 +31,7 @@ module.exports = tseslint.config(
   },
   {
     files: ['**/*.ts'],
+    ignores: ['__tests__/**'],
     languageOptions: {
       parserOptions: {
         project: './tsconfig.json',

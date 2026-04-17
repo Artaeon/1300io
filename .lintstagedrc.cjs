@@ -13,6 +13,6 @@ function runEslint(subdir, files) {
 }
 
 module.exports = {
-  'server/**/*.js': (files) => runEslint('server', files),
-  'client/**/*.{js,jsx}': (files) => runEslint('client', files),
+  'server/**/*.{js,ts}': (files) => runEslint('server', files),
+  'client/**/*.{js,jsx,ts,tsx}': (files) => runEslint('client', files),
 };
