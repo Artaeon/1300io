@@ -35,6 +35,15 @@ router.get(
     const limit = Math.min(100, Math.max(1, parseInt(String(req.query.limit ?? ''), 10) || 20));
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
 
+    // Allowed sort keys — whitelist guards against injection via any
+    // unexpected query-param content.
+    const sortKey = ((): 'createdAt' | 'address' | 'owner_name' | 'units_count' => {
+      const v = String(req.query.sort ?? 'createdAt');
+      if (v === 'address' || v === 'owner_name' || v === 'units_count' || v === 'createdAt') return v;
+      return 'createdAt';
+    })();
+    const sortDir = String(req.query.dir ?? 'desc') === 'asc' ? 'asc' : 'desc';
+
     const where: Prisma.PropertyWhereInput = {
       ...(req.orgFilter ?? {}),
       ...(search
@@ -53,7 +62,7 @@ router.get(
         where,
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { [sortKey]: sortDir },
         include: {
           inspections: {
             where: { status: 'COMPLETED' },
@@ -70,7 +79,35 @@ router.get(
       return { ...rest, lastInspection: inspections[0] ?? null };
     });
 
-    res.json({ data, total, page, limit, totalPages: Math.ceil(total / limit) });
+    // Optional status filter is applied AFTER the DB query so the
+    // client can show accurate totals per status without a full join.
+    // For large property counts this would move to a DB-side computed
+    // column — for the current size it's fine.
+    const statusFilter = String(req.query.status ?? '');
+    let filtered = data;
+    if (statusFilter === 'due' || statusFilter === 'expired' || statusFilter === 'valid') {
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      filtered = data.filter((p) => {
+        const endedAt = p.lastInspection?.ended_at;
+        if (!endedAt) return statusFilter === 'due';
+        const valid = new Date(endedAt) > oneYearAgo;
+        if (statusFilter === 'valid') return valid;
+        if (statusFilter === 'expired') return !valid;
+        return false;
+      });
+    }
+
+    res.json({
+      data: filtered,
+      total: statusFilter ? filtered.length : total,
+      unfilteredTotal: total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      sort: sortKey,
+      dir: sortDir,
+    });
   }),
 );
 

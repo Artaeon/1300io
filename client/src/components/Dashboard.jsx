@@ -54,6 +54,9 @@ export default function Dashboard() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState(''); // '' | 'due' | 'expired' | 'valid'
+    const [sort, setSort] = useState('createdAt'); // createdAt | address | owner_name
+    const [sortDir, setSortDir] = useState('desc'); // asc | desc
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user, logout, authFetch } = useAuth();
@@ -112,10 +115,13 @@ export default function Dashboard() {
         }
     }, [authFetch, toast]);
 
-    const fetchProperties = useCallback(async (currentPage, searchTerm) => {
+    const fetchProperties = useCallback(async (currentPage, searchTerm, status, sortBy, dir) => {
         try {
-            const params = new URLSearchParams({ page: currentPage, limit: 20 });
+            const params = new URLSearchParams({ page: String(currentPage), limit: '20' });
             if (searchTerm) params.set('search', searchTerm);
+            if (status) params.set('status', status);
+            if (sortBy) params.set('sort', sortBy);
+            if (dir) params.set('dir', dir);
             const propsRes = await authFetch(`/api/properties?${params}`);
             if (propsRes.status === 401) { logout(); return; }
             const result = await propsRes.json();
@@ -130,7 +136,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                await fetchProperties(1, '');
+                await fetchProperties(1, '', '', 'createdAt', 'desc');
 
                 // Fetch history
                 const histRes = await authFetch('/api/inspections/history?limit=5');
@@ -147,19 +153,26 @@ export default function Dashboard() {
         fetchData();
     }, [authFetch, fetchProperties]);
 
+    // Refetch when status/sort changes (search has its own debounced handler)
+    useEffect(() => {
+        if (loading) return;
+        fetchProperties(1, search, statusFilter, sort, sortDir);
+        setPage(1);
+    }, [statusFilter, sort, sortDir]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // Debounced search
     const handleSearchChange = (value) => {
         setSearch(value);
         if (searchTimer.current) clearTimeout(searchTimer.current);
         searchTimer.current = setTimeout(() => {
             setPage(1);
-            fetchProperties(1, value);
+            fetchProperties(1, value, statusFilter, sort, sortDir);
         }, 400);
     };
 
     const handlePageChange = (newPage) => {
         setPage(newPage);
-        fetchProperties(newPage, search);
+        fetchProperties(newPage, search, statusFilter, sort, sortDir);
         window.scrollTo(0, 0);
     };
 
@@ -271,16 +284,66 @@ export default function Dashboard() {
                         <span className="text-sm text-gray-500 dark:text-gray-400">({totalProperties})</span>
                     </div>
 
-                    {/* Search */}
-                    <div className="relative mb-4">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-                        <input
-                            type="text"
-                            placeholder="Objekte suchen..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
-                            value={search}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                        />
+                    {/* Search + Sort */}
+                    <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                        <div className="relative flex-1">
+                            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                            <label htmlFor="property-search" className="sr-only">Objekte suchen</label>
+                            <input
+                                id="property-search"
+                                type="search"
+                                placeholder="Objekte suchen..."
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                value={search}
+                                onChange={(e) => handleSearchChange(e.target.value)}
+                            />
+                        </div>
+                        <label htmlFor="property-sort" className="sr-only">Sortierung</label>
+                        <select
+                            id="property-sort"
+                            value={`${sort}:${sortDir}`}
+                            onChange={(e) => {
+                                const [k, d] = e.target.value.split(':');
+                                setSort(k);
+                                setSortDir(d);
+                            }}
+                            className="py-2.5 px-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                        >
+                            <option value="createdAt:desc">Neueste zuerst</option>
+                            <option value="createdAt:asc">Älteste zuerst</option>
+                            <option value="address:asc">Adresse A–Z</option>
+                            <option value="address:desc">Adresse Z–A</option>
+                            <option value="owner_name:asc">Eigentümer A–Z</option>
+                            <option value="units_count:desc">Einheiten ↓</option>
+                            <option value="units_count:asc">Einheiten ↑</option>
+                        </select>
+                    </div>
+
+                    {/* Status filter chips */}
+                    <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Status-Filter">
+                        {[
+                            { key: '', label: 'Alle' },
+                            { key: 'due', label: 'Prüfung fällig' },
+                            { key: 'expired', label: 'Abgelaufen' },
+                            { key: 'valid', label: 'Geprüft' },
+                        ].map((opt) => {
+                            const active = statusFilter === opt.key;
+                            return (
+                                <button
+                                    key={opt.key || 'all'}
+                                    type="button"
+                                    onClick={() => setStatusFilter(opt.key)}
+                                    aria-pressed={active}
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                                        active
+                                            ? 'bg-blue-600 dark:bg-blue-500 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     <div className="space-y-4">
