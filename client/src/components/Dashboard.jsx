@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../hooks/useToast';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { SkeletonPropertyCard } from './ui/Skeleton';
+import WelcomeCard from './WelcomeCard';
 import LegalFooter from './LegalFooter';
 
 // Helper: Check if inspection is within 1 year
@@ -206,6 +207,9 @@ export default function Dashboard() {
             </div>
 
             <div className="max-w-2xl mx-auto px-4 py-6 space-y-8">
+
+                {/* Welcome / onboarding — dismissable, persisted */}
+                <WelcomeCard userName={user?.name} />
 
                 {/* SECTION 1: Recent Inspections History */}
                 {history.length > 0 && (
