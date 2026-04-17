@@ -173,15 +173,32 @@ export default function Dashboard() {
                 <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
                     <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">PropSecure</h1>
                     <div className="flex items-center gap-1">
-                        <button onClick={toggleTheme} className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-xl active:scale-95 transition-all" title={dark ? 'Hellmodus' : 'Dunkelmodus'}>
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            aria-label={dark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren'}
+                            title={dark ? 'Hellmodus' : 'Dunkelmodus'}
+                            className="min-w-11 min-h-11 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        >
                             {dark ? <Sun size={22} /> : <Moon size={22} />}
                         </button>
                         {user?.role === 'ADMIN' && (
-                            <Link to="/admin/users" className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-xl active:scale-95 transition-all" title="Verwaltung">
+                            <Link
+                                to="/admin/users"
+                                aria-label="Verwaltung öffnen"
+                                title="Verwaltung"
+                                className="min-w-11 min-h-11 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            >
                                 <Settings size={22} />
                             </Link>
                         )}
-                        <button onClick={logout} className="text-gray-500 dark:text-gray-400 hover:text-red-500 p-2 rounded-xl active:scale-95 transition-all">
+                        <button
+                            type="button"
+                            onClick={logout}
+                            aria-label="Abmelden"
+                            title="Abmelden"
+                            className="min-w-11 min-h-11 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                        >
                             <LogOut size={22} />
                         </button>
                     </div>
@@ -278,24 +295,29 @@ export default function Dashboard() {
                                         <div className="flex items-center gap-1">
                                             {prop.lastInspection && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleDownloadPDF(prop.lastInspection.id)}
-                                                    className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1"
+                                                    aria-label="Letzten Bericht herunterladen"
                                                     title="Letzten Bericht herunterladen"
+                                                    className="min-w-11 min-h-11 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                                 >
                                                     <FileText size={18} />
                                                 </button>
                                             )}
                                             <Link
                                                 to={`/properties/${prop.id}/edit`}
-                                                className="text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 p-1"
+                                                aria-label="Objekt bearbeiten"
                                                 title="Bearbeiten"
+                                                className="min-w-11 min-h-11 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                             >
                                                 <Pencil size={18} />
                                             </Link>
                                             <button
+                                                type="button"
                                                 onClick={() => setDeleteConfirm(prop.id)}
-                                                className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 p-1"
+                                                aria-label="Objekt löschen"
                                                 title="Löschen"
+                                                className="min-w-11 min-h-11 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                                             >
                                                 <Trash2 size={18} />
                                             </button>
@@ -402,7 +424,10 @@ export default function Dashboard() {
             {/* FAB - Add Property */}
             <Link
                 to="/properties/new"
-                className="fixed bottom-20 right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-100 transition-transform active:scale-95"
+                aria-label="Neues Objekt hinzufügen"
+                title="Neues Objekt"
+                className="fixed right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-100 transition-transform active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/50"
+                style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
             >
                 <Plus size={28} />
             </Link>

@@ -5,6 +5,20 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* iOS Safari: prevent text resize on landscape rotation. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Respect user motion preferences. The "transitioning" theme-toggle
+   flash remains when enabled; we just don't auto-animate unrelated
+   transitions for folks who've asked for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Smooth dark mode transition */
@@ -13,4 +27,26 @@ html.transitioning *,
 html.transitioning *::before,
 html.transitioning *::after {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* Focus-visible ring default: keyboard users get a visible ring,
+   mouse/touch users don't (matches native browser behavior). Most
+   components already add ring utilities; this is the safety net. */
+:focus-visible {
+  outline: 2px solid rgb(59 130 246); /* blue-500 */
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* iOS tap highlight is distracting on buttons that already have
+   :active scale transforms. Remove and let component styles handle it. */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe-area-inset utilities are used directly via env() in components
+   that need them (Modal, Toast, OfflineBanner). This body rule ensures
+   the fixed-bottom FAB doesn't sit on the iOS home indicator. */
+body {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
