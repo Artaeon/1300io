@@ -1,3 +1,8 @@
+// MUST be the first import: OpenTelemetry auto-instrumentations need
+// to patch http/express/prisma BEFORE those modules are required, and
+// TS compiles these imports to require() calls in order.
+import './observability/preload';
+
 import express from 'express';
 import cors from 'cors';
 import type { NextFunction, Request, Response } from 'express';
@@ -17,6 +22,7 @@ import { uploadDir } from './middleware/uploadHandler';
 
 import * as sentry from './observability/sentry';
 import { metricsMiddleware, metricsHandler } from './observability/metrics';
+import { attachRequestIdAttribute } from './observability/tracing';
 
 import authRoutes from './routes/auth';
 import auditLogRoutes from './routes/auditLogs';
@@ -42,6 +48,7 @@ app.set('trust proxy', 1);
 
 // --- Core middleware ---
 app.use(requestId);
+app.use(attachRequestIdAttribute);
 app.use(metricsMiddleware);
 app.use(enforceHttps);
 app.use(securityHeaders());
