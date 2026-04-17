@@ -200,7 +200,8 @@ export default function UserManagement() {
                                     type="password"
                                     autoComplete="new-password"
                                     required={!editingUser}
-                                    minLength={8}
+                                    minLength={12}
+                                    title="Mindestens 12 Zeichen, Groß- und Kleinbuchstaben sowie eine Ziffer"
                                     className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
                                     value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                                 />

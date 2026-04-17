@@ -1,9 +1,25 @@
 import { z, type ZodType } from 'zod';
 import type { Request, Response, NextFunction } from 'express';
+import { checkPasswordPolicy, passwordPolicyMin } from './lib/passwordPolicy';
+
+// Enforce the project's password policy (length + complexity + weak-list).
+// Refinement runs after min() so the min() message stays actionable
+// when the user typed something too short.
+const strongPassword = z
+  .string()
+  .min(passwordPolicyMin, `Passwort muss mindestens ${passwordPolicyMin} Zeichen lang sein`)
+  .superRefine((pw, ctx) => {
+    const result = checkPasswordPolicy(pw);
+    if (!result.ok) {
+      for (const reason of result.reasons) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: reason });
+      }
+    }
+  });
 
 export const registerSchema = z.object({
   email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: strongPassword,
   name: z.string().min(1, 'Name is required').max(200),
 });
 
@@ -44,7 +60,7 @@ const VALID_ROLES = ['ADMIN', 'MANAGER', 'INSPECTOR', 'READONLY'] as const;
 
 export const createUserSchema = z.object({
   email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: strongPassword,
   name: z.string().min(1, 'Name is required').max(200),
   role: z.enum(VALID_ROLES, {
     message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
@@ -54,7 +70,7 @@ export const createUserSchema = z.object({
 export const updateUserSchema = z
   .object({
     email: z.string().email().optional(),
-    password: z.string().min(8).optional(),
+    password: strongPassword.optional(),
     name: z.string().min(1).max(200).optional(),
     role: z.enum(VALID_ROLES).optional(),
   })

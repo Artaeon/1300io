@@ -50,10 +50,11 @@ docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml up -d
 
 # 4. Seed the checklist and create an initial admin user
-docker compose -f docker-compose.prod.yml exec server node prisma/seed.js
+docker compose -f docker-compose.prod.yml exec server npm run db:seed
 docker compose -f docker-compose.prod.yml exec -e ADMIN_EMAIL=you@example.com \
-  -e ADMIN_PASSWORD='<strong>' -e ADMIN_NAME='You' \
-  server node seed_user.js
+  -e ADMIN_PASSWORD='<at-least-12-chars-Mixed-case-with-digits>' \
+  -e ADMIN_NAME='You' \
+  server npm run db:seed:admin
 ```
 
 ## Releases via GHCR
