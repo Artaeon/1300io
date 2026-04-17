@@ -209,31 +209,42 @@ export default function Setup({ onInitialized }) {
     );
 }
 
+const STEP_LABELS = ['Willkommen', 'Admin-Konto', 'Organisation'];
+
 function StepIndicator({ step, total }) {
+    const pct = ((step - 1) / (total - 1)) * 100;
     return (
-        <div className="flex items-center justify-center gap-2 mb-6" aria-label={`Schritt ${step} von ${total}`}>
-            {Array.from({ length: total }).map((_, i) => {
-                const n = i + 1;
-                const active = n === step;
-                const done = n < step;
-                return (
-                    <div key={n} className="flex items-center gap-2">
+        <div className="mb-7" aria-label={`Schritt ${step} von ${total}: ${STEP_LABELS[step - 1]}`}>
+            <div className="flex items-center justify-between mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                <span>Schritt {step} von {total}</span>
+                <span className="text-blue-600 dark:text-blue-400">{STEP_LABELS[step - 1]}</span>
+            </div>
+            <div className="relative h-2 rounded-full bg-gray-200/70 dark:bg-gray-800 overflow-hidden">
+                <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-[width] duration-500 ease-out"
+                    style={{ width: `${Math.max(8, pct)}%` }}
+                />
+            </div>
+            <div className="flex items-center justify-between mt-3">
+                {Array.from({ length: total }).map((_, i) => {
+                    const n = i + 1;
+                    const active = n === step;
+                    const done = n < step;
+                    return (
                         <div
+                            key={n}
                             className={[
-                                'w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors',
-                                done ? 'bg-green-500 text-white' :
-                                active ? 'bg-blue-600 dark:bg-blue-500 text-white' :
-                                'bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+                                'flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold transition-all duration-300',
+                                done ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-sm' :
+                                active ? 'bg-white dark:bg-gray-800 ring-2 ring-blue-500 dark:ring-blue-400 text-blue-600 dark:text-blue-400 scale-110 animate-pulse-ring' :
+                                'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500',
                             ].join(' ')}
                         >
                             {done ? <CheckCircle size={14} /> : n}
                         </div>
-                        {n < total && (
-                            <div className={`h-px w-6 ${done ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-800'}`} />
-                        )}
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 }
