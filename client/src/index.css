@@ -117,3 +117,28 @@ body {
   stroke-dashoffset: 40;
   animation: checkmark-draw 480ms cubic-bezier(0.65, 0, 0.35, 1) 140ms forwards;
 }
+
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.animate-shake {
+  animation: shake-x 360ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Slow, ambient drift for decorative background blobs. */
+@keyframes blob-float-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(24px, -18px) scale(1.08); }
+}
+@keyframes blob-float-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-20px, 22px) scale(1.05); }
+}
+
+.animate-blob-a { animation: blob-float-a 14s ease-in-out infinite; }
+.animate-blob-b { animation: blob-float-b 18s ease-in-out infinite; }
