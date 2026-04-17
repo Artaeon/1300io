@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
+const { randomBytes } = require('node:crypto');
 const prisma = require('../lib/prisma');
 const { config } = require('../config');
 const { registerSchema, loginSchema, validateBody } = require('../schemas');
@@ -20,7 +20,7 @@ function generateAccessToken(user) {
 }
 
 function generateRefreshToken() {
-    return crypto.randomBytes(48).toString('base64url');
+    return randomBytes(48).toString('base64url');
 }
 
 // Register
