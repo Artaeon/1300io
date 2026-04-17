@@ -144,24 +144,29 @@ export default function Setup({ onInitialized }) {
                         </div>
                     )}
 
-                    {step === 1 && <WelcomeStep />}
-                    {step === 2 && (
-                        <AdminStep
-                            name={adminName} setName={setAdminName}
-                            email={adminEmail} setEmail={setAdminEmail}
-                            password={adminPassword} setPassword={setAdminPassword}
-                            confirm={adminConfirm} setConfirm={setAdminConfirm}
-                            error={adminError}
-                            disabled={loading}
-                        />
-                    )}
-                    {step === 3 && (
-                        <OrgStep
-                            name={orgName} setName={setOrgName}
-                            error={orgError}
-                            disabled={loading}
-                        />
-                    )}
+                    {/* keyed wrapper forces a remount + animation on every
+                        step change, so forward + backward navigation both
+                        get a crisp fade-slide transition. */}
+                    <div key={step} className="animate-fade-in-right">
+                        {step === 1 && <WelcomeStep />}
+                        {step === 2 && (
+                            <AdminStep
+                                name={adminName} setName={setAdminName}
+                                email={adminEmail} setEmail={setAdminEmail}
+                                password={adminPassword} setPassword={setAdminPassword}
+                                confirm={adminConfirm} setConfirm={setAdminConfirm}
+                                error={adminError}
+                                disabled={loading}
+                            />
+                        )}
+                        {step === 3 && (
+                            <OrgStep
+                                name={orgName} setName={setOrgName}
+                                error={orgError}
+                                disabled={loading}
+                            />
+                        )}
+                    </div>
 
                     <div className="flex items-center justify-between gap-3 mt-6">
                         {step > 1 ? (
