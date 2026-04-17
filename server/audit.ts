@@ -2,7 +2,15 @@ import type { Request } from 'express';
 import prisma from './lib/prisma';
 import logger from './logger';
 
-export type AuditAction = 'CREATE' | 'UPDATE' | 'DELETE';
+export type AuditAction =
+  | 'CREATE'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'LOGIN_SUCCESS'
+  | 'LOGIN_FAILURE'
+  | 'LOGOUT'
+  | 'TOKEN_REFRESH'
+  | 'ACCOUNT_LOCKED';
 
 export interface AuditEntry {
   action: AuditAction;

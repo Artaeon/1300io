@@ -26,7 +26,17 @@ router.get(
     if (typeof req.query.entityType === 'string' && req.query.entityType) {
       where.entityType = req.query.entityType;
     }
-    if (typeof req.query.action === 'string' && ['CREATE', 'UPDATE', 'DELETE'].includes(req.query.action)) {
+    const allowedActions = [
+      'CREATE',
+      'UPDATE',
+      'DELETE',
+      'LOGIN_SUCCESS',
+      'LOGIN_FAILURE',
+      'LOGOUT',
+      'TOKEN_REFRESH',
+      'ACCOUNT_LOCKED',
+    ];
+    if (typeof req.query.action === 'string' && allowedActions.includes(req.query.action)) {
       where.action = req.query.action;
     }
     if (typeof req.query.userId === 'string' && req.query.userId) {

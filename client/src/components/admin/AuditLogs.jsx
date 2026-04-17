@@ -7,10 +7,15 @@ const ACTION_COLORS = {
     CREATE: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
     UPDATE: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400',
     DELETE: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400',
+    LOGIN_SUCCESS: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400',
+    LOGIN_FAILURE: 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400',
+    LOGOUT: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
+    TOKEN_REFRESH: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400',
+    ACCOUNT_LOCKED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400',
 };
 
 const ENTITY_TYPES = ['', 'User', 'Organization', 'Property', 'Inspection', 'InspectionResult', 'ChecklistCategory', 'ChecklistItem'];
-const ACTIONS = ['', 'CREATE', 'UPDATE', 'DELETE'];
+const ACTIONS = ['', 'CREATE', 'UPDATE', 'DELETE', 'LOGIN_SUCCESS', 'LOGIN_FAILURE', 'LOGOUT', 'TOKEN_REFRESH'];
 
 export default function AuditLogs() {
     const { authFetch } = useAuth();
