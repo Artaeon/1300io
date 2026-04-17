@@ -2,7 +2,7 @@ const express = require('express');
 const prisma = require('../lib/prisma');
 const logger = require('../logger');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { authenticateToken, authorizeRoles, canAccessOrg } = require('../middleware/auth');
 const { createAuditEntry, getAuditContext } = require('../audit');
 const {
   createInspectionSchema,
@@ -18,7 +18,13 @@ router.get('/history', authenticateToken, asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
 
-  const where = { status: 'COMPLETED' };
+  const isSuperAdmin = req.user.role === 'ADMIN' && !req.user.organizationId;
+  const where = {
+    status: 'COMPLETED',
+    ...(isSuperAdmin
+      ? {}
+      : { property: { organizationId: req.user.organizationId ?? null } }),
+  };
 
   const [total, inspections] = await Promise.all([
     prisma.inspection.count({ where }),
@@ -41,6 +47,9 @@ router.post('/', authenticateToken, authorizeRoles('ADMIN', 'MANAGER', 'INSPECTO
 
   const property = await prisma.property.findUnique({ where: { id: propertyId } });
   if (!property) return res.status(404).json({ error: 'Property not found' });
+  if (!canAccessOrg(req.user, property.organizationId)) {
+    return res.status(404).json({ error: 'Property not found' });
+  }
 
   const inspection = await prisma.inspection.create({
     data: {
@@ -53,18 +62,33 @@ router.post('/', authenticateToken, authorizeRoles('ADMIN', 'MANAGER', 'INSPECTO
   res.status(201).json(inspection);
 }));
 
+async function loadInspectionWithOrg(id) {
+  return prisma.inspection.findUnique({
+    where: { id },
+    include: { property: { select: { organizationId: true } } },
+  });
+}
+
 router.get('/:id', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
   const inspection = await prisma.inspection.findUnique({
     where: { id: req.validatedParams.id },
-    include: { results: true },
+    include: { results: true, property: { select: { organizationId: true } } },
   });
   if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
-  res.json(inspection);
+  if (!canAccessOrg(req.user, inspection.property?.organizationId)) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
+  // Strip the org-only field before returning
+  const { property: _p, ...rest } = inspection;
+  res.json(rest);
 }));
 
 router.get('/:id/results', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
-  const inspection = await prisma.inspection.findUnique({ where: { id: req.validatedParams.id } });
+  const inspection = await loadInspectionWithOrg(req.validatedParams.id);
   if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+  if (!canAccessOrg(req.user, inspection.property?.organizationId)) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
 
   const results = await prisma.inspectionResult.findMany({
     where: { inspection_id: req.validatedParams.id },
@@ -76,8 +100,11 @@ router.post('/:id/results', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'
   const inspectionId = req.validatedParams.id;
   const { checklistItemId, status, comment, photoUrl } = req.validatedBody;
 
-  const inspection = await prisma.inspection.findUnique({ where: { id: inspectionId } });
+  const inspection = await loadInspectionWithOrg(inspectionId);
   if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+  if (!canAccessOrg(req.user, inspection.property?.organizationId)) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
   if (inspection.status !== 'DRAFT') return res.status(400).json({ error: 'Cannot modify a completed inspection' });
 
   const existingResult = await prisma.inspectionResult.findFirst({
@@ -146,6 +173,11 @@ router.post('/:id/results', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'
 
 router.get('/:id/validate', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
   const inspectionId = req.validatedParams.id;
+  const inspection = await loadInspectionWithOrg(inspectionId);
+  if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+  if (!canAccessOrg(req.user, inspection.property?.organizationId)) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
 
   const allItems = await prisma.checklistItem.findMany();
   const answeredResults = await prisma.inspectionResult.findMany({
@@ -167,8 +199,11 @@ router.get('/:id/validate', authenticateToken, validateParams(idParamSchema), as
 router.post('/:id/complete', authenticateToken, authorizeRoles('ADMIN', 'MANAGER', 'INSPECTOR'), validateParams(idParamSchema), asyncHandler(async (req, res) => {
   const inspectionId = req.validatedParams.id;
 
-  const existing = await prisma.inspection.findUnique({ where: { id: inspectionId } });
+  const existing = await loadInspectionWithOrg(inspectionId);
   if (!existing) return res.status(404).json({ error: 'Inspection not found' });
+  if (!canAccessOrg(req.user, existing.property?.organizationId)) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
   if (existing.status === 'COMPLETED') return res.status(400).json({ error: 'Inspection is already completed' });
 
   const inspection = await prisma.inspection.update({

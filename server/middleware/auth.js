@@ -39,4 +39,40 @@ function injectOrgFilter(req, res, next) {
   next();
 }
 
-module.exports = { authenticateToken, authorizeRoles, injectOrgFilter };
+// Return true if the caller can read/modify a record scoped to an
+// organization. ADMIN without an org sees everything; everyone else
+// must match the record's organizationId (null matches null, so
+// users without an org can still access legacy unscoped records).
+function canAccessOrg(user, organizationId) {
+  if (!user) return false;
+  if (user.role === 'ADMIN' && !user.organizationId) return true;
+  return (user.organizationId ?? null) === (organizationId ?? null);
+}
+
+// Short-circuit middleware producing 404 (not 403) for records
+// outside the caller's org. 404 avoids leaking existence of records
+// the caller shouldn't know about.
+function requireOrgAccess(getOrgId) {
+  return async (req, res, next) => {
+    try {
+      const organizationId = await getOrgId(req);
+      if (organizationId === undefined) {
+        return res.status(404).json({ error: 'Not found', requestId: req.id });
+      }
+      if (!canAccessOrg(req.user, organizationId)) {
+        return res.status(404).json({ error: 'Not found', requestId: req.id });
+      }
+      next();
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+
+module.exports = {
+  authenticateToken,
+  authorizeRoles,
+  injectOrgFilter,
+  canAccessOrg,
+  requireOrgAccess,
+};

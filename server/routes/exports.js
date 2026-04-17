@@ -5,7 +5,7 @@ const PDFDocument = require('pdfkit');
 const prisma = require('../lib/prisma');
 const logger = require('../logger');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, canAccessOrg } = require('../middleware/auth');
 const { pdfLimiter } = require('../middleware/rateLimiters');
 const { uploadDir } = require('../middleware/uploadHandler');
 const { idParamSchema, validateParams } = require('../schemas');
@@ -26,6 +26,9 @@ router.get('/:id/export/csv', authenticateToken, validateParams(idParamSchema), 
   });
 
   if (!inspection) return res.status(404).json({ error: 'Inspection not found' });
+  if (!canAccessOrg(req.user, inspection.property?.organizationId)) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
 
   const escapeCSV = (val) => {
     if (val == null) return '';
@@ -74,6 +77,9 @@ router.get('/:id/pdf', authenticateToken, pdfLimiter, validateParams(idParamSche
   });
 
   if (!inspection) {
+    return res.status(404).json({ error: 'Inspection not found' });
+  }
+  if (!canAccessOrg(req.user, inspection.property?.organizationId)) {
     return res.status(404).json({ error: 'Inspection not found' });
   }
 

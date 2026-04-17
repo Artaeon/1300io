@@ -2,7 +2,7 @@ const express = require('express');
 const QRCode = require('qrcode');
 const prisma = require('../lib/prisma');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { authenticateToken, authorizeRoles, injectOrgFilter } = require('../middleware/auth');
+const { authenticateToken, authorizeRoles, injectOrgFilter, canAccessOrg } = require('../middleware/auth');
 const { createAuditEntry, getAuditContext } = require('../audit');
 const { config } = require('../config');
 const {
@@ -71,12 +71,18 @@ router.get('/:id', authenticateToken, validateParams(idParamSchema), asyncHandle
     where: { id: req.validatedParams.id },
   });
   if (!property) return res.status(404).json({ error: 'Property not found' });
+  if (!canAccessOrg(req.user, property.organizationId)) {
+    return res.status(404).json({ error: 'Property not found' });
+  }
   res.json(property);
 }));
 
 router.put('/:id', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'), validateParams(idParamSchema), validateBody(updatePropertySchema), asyncHandler(async (req, res) => {
   const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
   if (!property) return res.status(404).json({ error: 'Property not found' });
+  if (!canAccessOrg(req.user, property.organizationId)) {
+    return res.status(404).json({ error: 'Property not found' });
+  }
 
   const updated = await prisma.property.update({
     where: { id: req.validatedParams.id },
@@ -90,6 +96,9 @@ router.put('/:id', authenticateToken, authorizeRoles('ADMIN', 'MANAGER'), valida
 router.delete('/:id', authenticateToken, authorizeRoles('ADMIN'), validateParams(idParamSchema), asyncHandler(async (req, res) => {
   const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
   if (!property) return res.status(404).json({ error: 'Property not found' });
+  if (!canAccessOrg(req.user, property.organizationId)) {
+    return res.status(404).json({ error: 'Property not found' });
+  }
 
   const activeDraft = await prisma.inspection.findFirst({
     where: { property_id: req.validatedParams.id, status: 'DRAFT' },
@@ -110,6 +119,13 @@ router.delete('/:id', authenticateToken, authorizeRoles('ADMIN'), validateParams
 }));
 
 router.get('/:id/draft-inspection', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
+  const property = await prisma.property.findUnique({
+    where: { id: req.validatedParams.id },
+    select: { organizationId: true },
+  });
+  if (!property || !canAccessOrg(req.user, property.organizationId)) {
+    return res.json(null);
+  }
   const draft = await prisma.inspection.findFirst({
     where: { property_id: req.validatedParams.id, status: 'DRAFT' },
     orderBy: { createdAt: 'desc' },
@@ -120,6 +136,9 @@ router.get('/:id/draft-inspection', authenticateToken, validateParams(idParamSch
 router.get('/:id/qr', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
   const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
   if (!property) return res.status(404).json({ error: 'Property not found' });
+  if (!canAccessOrg(req.user, property.organizationId)) {
+    return res.status(404).json({ error: 'Property not found' });
+  }
 
   const baseUrl = config.frontendUrl || `${req.protocol}://${req.get('host')}`;
   const inspectionUrl = `${baseUrl}/inspection/new/${property.id}`;
@@ -136,6 +155,9 @@ router.get('/:id/qr', authenticateToken, validateParams(idParamSchema), asyncHan
 router.get('/:id/defects', authenticateToken, validateParams(idParamSchema), asyncHandler(async (req, res) => {
   const property = await prisma.property.findUnique({ where: { id: req.validatedParams.id } });
   if (!property) return res.status(404).json({ error: 'Property not found' });
+  if (!canAccessOrg(req.user, property.organizationId)) {
+    return res.status(404).json({ error: 'Property not found' });
+  }
 
   const defects = await prisma.defectTracking.findMany({
     where: { property_id: req.validatedParams.id },
