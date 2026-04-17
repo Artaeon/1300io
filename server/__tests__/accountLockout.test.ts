@@ -15,7 +15,7 @@ beforeAll(async () => {
     cwd: path.resolve(__dirname, '..'),
     stdio: 'pipe',
   });
-  app = require('../index');
+  app = (await import('../index')).default;
   const pw = await bcrypt.hash('Correct-Horse-Battery-42', 12);
   await prisma.user.create({
     data: { email: 'target@lockout.test', password: pw, name: 'Target', role: 'INSPECTOR' },

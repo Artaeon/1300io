@@ -1,53 +1,68 @@
-const {
+import { describe, it, expect } from 'vitest';
+import {
   registerSchema,
   loginSchema,
   createPropertySchema,
   createInspectionSchema,
   inspectionResultSchema,
   idParamSchema,
-} = require('../schemas');
+} from '../schemas';
+
+// A reusable password that satisfies the 12-char, mixed-case,
+// digit-containing policy and isn't on the blocklist.
+const STRONG_PASSWORD = 'Correct-Horse-Battery-42';
 
 describe('Validation Schemas', () => {
   describe('registerSchema', () => {
-    it('should accept valid registration data', () => {
+    it('accepts valid registration data (with a policy-compliant password)', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
-        password: 'securepassword123',
+        password: STRONG_PASSWORD,
         name: 'Test User',
       });
       expect(result.success).toBe(true);
     });
 
-    it('should reject invalid email', () => {
+    it('rejects invalid email', () => {
       const result = registerSchema.safeParse({
         email: 'not-an-email',
-        password: 'securepassword123',
+        password: STRONG_PASSWORD,
         name: 'Test User',
       });
       expect(result.success).toBe(false);
     });
 
-    it('should reject short password', () => {
+    it('rejects short password (below the 12-char floor)', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
-        password: '123',
+        password: 'Short1A',
         name: 'Test User',
       });
       expect(result.success).toBe(false);
     });
 
-    it('should reject empty name', () => {
+    it('rejects empty name', () => {
       const result = registerSchema.safeParse({
         email: 'test@example.com',
-        password: 'securepassword123',
+        password: STRONG_PASSWORD,
         name: '',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('rejects passwords that fail the policy even when >=12 chars', () => {
+      // all-lowercase, no digit
+      const result = registerSchema.safeParse({
+        email: 'test@example.com',
+        password: 'allgoodlowercase',
+        name: 'Test User',
       });
       expect(result.success).toBe(false);
     });
   });
 
   describe('loginSchema', () => {
-    it('should accept valid login data', () => {
+    it('accepts valid login data', () => {
       const result = loginSchema.safeParse({
         email: 'test@example.com',
         password: 'anypassword',
@@ -55,7 +70,7 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject missing password', () => {
+    it('rejects missing password', () => {
       const result = loginSchema.safeParse({
         email: 'test@example.com',
       });
@@ -64,7 +79,7 @@ describe('Validation Schemas', () => {
   });
 
   describe('createPropertySchema', () => {
-    it('should accept valid property data', () => {
+    it('accepts valid property data', () => {
       const result = createPropertySchema.safeParse({
         address: 'Musterstrasse 1, 1010 Wien',
         owner_name: 'Test GmbH',
@@ -73,17 +88,19 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should coerce string units_count to number', () => {
+    it('coerces string units_count to number', () => {
       const result = createPropertySchema.safeParse({
         address: 'Musterstrasse 1',
         owner_name: 'Test',
         units_count: '5',
       });
       expect(result.success).toBe(true);
-      expect(result.data.units_count).toBe(5);
+      if (result.success) {
+        expect(result.data.units_count).toBe(5);
+      }
     });
 
-    it('should reject negative units count', () => {
+    it('rejects negative units count', () => {
       const result = createPropertySchema.safeParse({
         address: 'Musterstrasse 1',
         owner_name: 'Test',
@@ -92,7 +109,7 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(false);
     });
 
-    it('should reject empty address', () => {
+    it('rejects empty address', () => {
       const result = createPropertySchema.safeParse({
         address: '',
         owner_name: 'Test',
@@ -103,7 +120,7 @@ describe('Validation Schemas', () => {
   });
 
   describe('createInspectionSchema', () => {
-    it('should accept valid inspection data', () => {
+    it('accepts valid inspection data', () => {
       const result = createInspectionSchema.safeParse({
         propertyId: 1,
         inspectorName: 'Max Mustermann',
@@ -111,18 +128,20 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should coerce string propertyId', () => {
+    it('coerces string propertyId', () => {
       const result = createInspectionSchema.safeParse({
         propertyId: '1',
         inspectorName: 'Max',
       });
       expect(result.success).toBe(true);
-      expect(result.data.propertyId).toBe(1);
+      if (result.success) {
+        expect(result.data.propertyId).toBe(1);
+      }
     });
   });
 
   describe('inspectionResultSchema', () => {
-    it('should accept valid result with OK status', () => {
+    it('accepts valid result with OK status', () => {
       const result = inspectionResultSchema.safeParse({
         checklistItemId: 1,
         status: 'OK',
@@ -130,7 +149,7 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should accept valid result with DEFECT status and comment', () => {
+    it('accepts valid result with DEFECT status and comment', () => {
       const result = inspectionResultSchema.safeParse({
         checklistItemId: 1,
         status: 'DEFECT',
@@ -140,7 +159,7 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should accept NOT_APPLICABLE status', () => {
+    it('accepts NOT_APPLICABLE status', () => {
       const result = inspectionResultSchema.safeParse({
         checklistItemId: 1,
         status: 'NOT_APPLICABLE',
@@ -148,7 +167,7 @@ describe('Validation Schemas', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject invalid status', () => {
+    it('rejects invalid status', () => {
       const result = inspectionResultSchema.safeParse({
         checklistItemId: 1,
         status: 'INVALID',
@@ -158,18 +177,20 @@ describe('Validation Schemas', () => {
   });
 
   describe('idParamSchema', () => {
-    it('should accept valid numeric id', () => {
+    it('accepts valid numeric id', () => {
       const result = idParamSchema.safeParse({ id: '5' });
       expect(result.success).toBe(true);
-      expect(result.data.id).toBe(5);
+      if (result.success) {
+        expect(result.data.id).toBe(5);
+      }
     });
 
-    it('should reject non-numeric id', () => {
+    it('rejects non-numeric id', () => {
       const result = idParamSchema.safeParse({ id: 'abc' });
       expect(result.success).toBe(false);
     });
 
-    it('should reject zero id', () => {
+    it('rejects zero id', () => {
       const result = idParamSchema.safeParse({ id: '0' });
       expect(result.success).toBe(false);
     });

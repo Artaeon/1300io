@@ -1,31 +1,34 @@
-const request = require('supertest');
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const path = require('path');
+import request from 'supertest';
+import bcrypt from 'bcryptjs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
+import { PrismaClient } from '@prisma/client';
+import { beforeAll, afterAll, describe, it, expect } from 'vitest';
 
 const prisma = new PrismaClient();
 
-let app;
-let orgAToken;
-let orgBToken;
-let orgAPropertyId;
-let orgBPropertyId;
-let orgBInspectionId;
+let app: import('express').Express;
+let orgAToken: string;
+let orgBToken: string;
+let orgAPropertyId: number;
+let orgBPropertyId: number;
+let orgBInspectionId: number;
+
+const STRONG_PW = 'Correct-Horse-Battery-42';
 
 beforeAll(async () => {
-  const { execSync } = require('child_process');
   execSync('npx prisma db push --force-reset --skip-generate', {
     env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
     cwd: path.resolve(__dirname, '..'),
     stdio: 'pipe',
   });
 
-  app = require('../index');
+  app = (await import('../index')).default;
 
   const orgA = await prisma.organization.create({ data: { name: 'Alpha' } });
   const orgB = await prisma.organization.create({ data: { name: 'Beta' } });
 
-  const pw = await bcrypt.hash('testpassword123', 12);
+  const pw = await bcrypt.hash(STRONG_PW, 12);
   await prisma.user.create({
     data: { email: 'mgr-a@test.com', password: pw, name: 'MgrA', role: 'MANAGER', organizationId: orgA.id },
   });
@@ -33,8 +36,8 @@ beforeAll(async () => {
     data: { email: 'mgr-b@test.com', password: pw, name: 'MgrB', role: 'MANAGER', organizationId: orgB.id },
   });
 
-  orgAToken = (await request(app).post('/api/auth/login').send({ email: 'mgr-a@test.com', password: 'testpassword123' })).body.token;
-  orgBToken = (await request(app).post('/api/auth/login').send({ email: 'mgr-b@test.com', password: 'testpassword123' })).body.token;
+  orgAToken = (await request(app).post('/api/auth/login').send({ email: 'mgr-a@test.com', password: STRONG_PW })).body.token;
+  orgBToken = (await request(app).post('/api/auth/login').send({ email: 'mgr-b@test.com', password: STRONG_PW })).body.token;
 
   // Each manager creates a property — organizationId stamped from the JWT
   const propA = await request(app)

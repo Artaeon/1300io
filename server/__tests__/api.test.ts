@@ -1,37 +1,38 @@
-const request = require('supertest');
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const fs = require('fs');
-const path = require('path');
+import request from 'supertest';
+import bcrypt from 'bcryptjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import { execSync } from 'node:child_process';
+import { PrismaClient } from '@prisma/client';
+import { beforeAll, afterAll, describe, it, expect } from 'vitest';
 
 const prisma = new PrismaClient();
 
-// Ensure test uploads directory exists
 const testUploadDir = path.resolve(process.env.UPLOAD_DIR || './test-uploads');
 if (!fs.existsSync(testUploadDir)) {
   fs.mkdirSync(testUploadDir, { recursive: true });
 }
 
-let app;
-let authToken;
-let readonlyToken;
-let testPropertyId;
-let testInspectionId;
+let app: import('express').Express;
+let authToken: string;
+let readonlyToken: string;
+let testPropertyId: number;
+let testInspectionId: number;
+// Strong password that satisfies the policy, reused by every user
+// created in beforeAll (and any /register calls in the suite).
+const STRONG_PW = 'Correct-Horse-Battery-42';
 
 beforeAll(async () => {
-  // Push schema to test database
-  const { execSync } = require('child_process');
   execSync('npx prisma db push --force-reset --skip-generate', {
     env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
     cwd: path.resolve(__dirname, '..'),
     stdio: 'pipe',
   });
 
-  // Import app after env is set
-  app = require('../index');
+  app = (await import('../index')).default;
 
   // Create test admin user
-  const hashedPassword = await bcrypt.hash('testpassword123', 12);
+  const hashedPassword = await bcrypt.hash(STRONG_PW, 12);
   await prisma.user.create({
     data: { email: 'admin@test.com', password: hashedPassword, name: 'Test Admin', role: 'ADMIN' }
   });
@@ -57,13 +58,13 @@ beforeAll(async () => {
   // Login as admin
   const loginRes = await request(app)
     .post('/api/auth/login')
-    .send({ email: 'admin@test.com', password: 'testpassword123' });
+    .send({ email: 'admin@test.com', password: STRONG_PW });
   authToken = loginRes.body.token;
 
   // Login as readonly
   const readonlyRes = await request(app)
     .post('/api/auth/login')
-    .send({ email: 'readonly@test.com', password: 'testpassword123' });
+    .send({ email: 'readonly@test.com', password: STRONG_PW });
   readonlyToken = readonlyRes.body.token;
 });
 
@@ -100,7 +101,7 @@ describe('Authentication', () => {
   it('POST /api/auth/register should create a new user', async () => {
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'newuser@test.com', password: 'password123', name: 'New User' });
+      .send({ email: 'newuser@test.com', password: STRONG_PW, name: 'New User' });
     expect(res.status).toBe(201);
     expect(res.body.message).toBe('User created');
     expect(res.body.user.role).toBe('INSPECTOR');
@@ -109,14 +110,14 @@ describe('Authentication', () => {
   it('POST /api/auth/register should reject duplicate email', async () => {
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'admin@test.com', password: 'password123', name: 'Duplicate' });
+      .send({ email: 'admin@test.com', password: STRONG_PW, name: 'Duplicate' });
     expect(res.status).toBe(409);
   });
 
   it('POST /api/auth/register should reject invalid email', async () => {
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'not-email', password: 'password123', name: 'Bad Email' });
+      .send({ email: 'not-email', password: STRONG_PW, name: 'Bad Email' });
     expect(res.status).toBe(400);
   });
 
@@ -130,7 +131,7 @@ describe('Authentication', () => {
   it('POST /api/auth/login should return token for valid credentials', async () => {
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'admin@test.com', password: 'testpassword123' });
+      .send({ email: 'admin@test.com', password: STRONG_PW });
     expect(res.status).toBe(200);
     expect(res.body.token).toBeDefined();
     expect(res.body.user.email).toBe('admin@test.com');
@@ -147,7 +148,7 @@ describe('Authentication', () => {
   it('POST /api/auth/login should reject nonexistent user', async () => {
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'nonexistent@test.com', password: 'password123' });
+      .send({ email: 'nonexistent@test.com', password: STRONG_PW });
     expect(res.status).toBe(401);
   });
 
@@ -165,13 +166,13 @@ describe('Authentication', () => {
 });
 
 describe('Token Refresh', () => {
-  let refreshToken;
-  const crypto = require('crypto');
+  let refreshToken: string;
+  const { randomBytes } = require('node:crypto') as typeof import('node:crypto');
 
   beforeAll(async () => {
     // Create a refresh token directly in the DB to avoid login rate limits
     const testUser = await prisma.user.findUnique({ where: { email: 'admin@test.com' } });
-    refreshToken = crypto.randomBytes(48).toString('base64url');
+    refreshToken = randomBytes(48).toString('base64url');
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
     await prisma.refreshToken.create({
@@ -785,7 +786,7 @@ describe('User Management', () => {
     const res = await request(app)
       .post('/api/users')
       .set('Authorization', `Bearer ${authToken}`)
-      .send({ email: 'manager@test.com', password: 'password123', name: 'Manager User', role: 'MANAGER' });
+      .send({ email: 'manager@test.com', password: STRONG_PW, name: 'Manager User', role: 'MANAGER' });
     expect(res.status).toBe(201);
     expect(res.body.email).toBe('manager@test.com');
     expect(res.body.role).toBe('MANAGER');
@@ -796,7 +797,7 @@ describe('User Management', () => {
     const res = await request(app)
       .post('/api/users')
       .set('Authorization', `Bearer ${authToken}`)
-      .send({ email: 'manager@test.com', password: 'password123', name: 'Dup', role: 'INSPECTOR' });
+      .send({ email: 'manager@test.com', password: STRONG_PW, name: 'Dup', role: 'INSPECTOR' });
     expect(res.status).toBe(409);
   });
 
