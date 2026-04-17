@@ -11,7 +11,6 @@ export default class ErrorBoundary extends React.Component {
     }
 
     componentDidCatch(error, info) {
-        // eslint-disable-next-line no-console
         console.error('Uncaught UI error', error, info);
         if (typeof window !== 'undefined' && window.Sentry) {
             window.Sentry.captureException(error, { extra: info });
