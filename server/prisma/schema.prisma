@@ -18,16 +18,19 @@ model Organization {
 }
 
 model User {
-  id             Int            @id @default(autoincrement())
-  email          String         @unique
-  password       String
-  name           String
-  role           String         @default("INSPECTOR") // ADMIN, MANAGER, INSPECTOR, READONLY
-  organizationId Int?
-  organization   Organization?  @relation(fields: [organizationId], references: [id])
-  refreshTokens  RefreshToken[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id                         Int                       @id @default(autoincrement())
+  email                      String                    @unique
+  password                   String
+  name                       String
+  role                       String                    @default("INSPECTOR") // ADMIN, MANAGER, INSPECTOR, READONLY
+  emailVerified              Boolean                   @default(false)
+  organizationId             Int?
+  organization               Organization?             @relation(fields: [organizationId], references: [id])
+  refreshTokens              RefreshToken[]
+  emailVerificationTokens    EmailVerificationToken[]
+  passwordResetTokens        PasswordResetToken[]
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
 
   @@index([organizationId])
   @@index([role])
@@ -39,6 +42,38 @@ model RefreshToken {
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Single-use token emailed to the user after registration or via a
+// re-send request. Consumed on verify-email. Null-safe delete cascade
+// from User so deleting a user cleans up their outstanding tokens.
+model EmailVerificationToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Single-use token for the forgot-password flow. usedAt is set on
+// consumption so replay attempts after success land in the LOGIN_FAILURE
+// audit row path rather than silently resetting the password twice.
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
   createdAt DateTime @default(now())
 
   @@index([userId])
