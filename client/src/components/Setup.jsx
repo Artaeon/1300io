@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, UserPlus, Loader2, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Building2, UserPlus, Loader2, CheckCircle, AlertTriangle, ArrowRight, ArrowLeft, ShieldCheck, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import Logo from './Logo';
 import LegalFooter from './LegalFooter';
 
 /**
@@ -23,6 +25,7 @@ const TOTAL_STEPS = 3;
 export default function Setup({ onInitialized }) {
     const navigate = useNavigate();
     const { bootstrapSession } = useAuth();
+    const { dark, toggleTheme } = useTheme();
 
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -117,9 +120,21 @@ export default function Setup({ onInitialized }) {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">
-            <div className="flex-1 flex items-center justify-center p-4">
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-md w-full">
+        <div className="relative min-h-screen flex flex-col bg-gradient-to-b from-blue-50 via-white to-gray-100 dark:from-gray-950 dark:via-gray-950 dark:to-gray-900">
+            <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={dark ? 'Hellmodus aktivieren' : 'Dunkelmodus aktivieren'}
+                title={dark ? 'Hellmodus' : 'Dunkelmodus'}
+                className="absolute top-4 right-4 p-2.5 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-md text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 shadow-sm transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+                {dark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <div className="flex-1 flex flex-col items-center justify-center p-4">
+                <div className="flex items-center gap-3 mb-6 animate-fade-in-up text-gray-900 dark:text-gray-100">
+                    <Logo size={44} />
+                </div>
+                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-md w-full animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <StepIndicator step={step} total={TOTAL_STEPS} />
 
                     {serverError && (
