@@ -8,6 +8,7 @@ import ConfirmDialog from './ui/ConfirmDialog';
 import { SkeletonPropertyCard } from './ui/Skeleton';
 import WelcomeCard from './WelcomeCard';
 import LegalFooter from './LegalFooter';
+import Logo from './Logo';
 
 // Helper: Check if inspection is within 1 year
 const isInspectionValid = (endedAt) => {
@@ -185,7 +186,7 @@ export default function Dashboard() {
             {/* Header */}
             <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">PropSecure</h1>
+                    <Logo size={32} className="text-gray-900 dark:text-gray-100" />
                     <div className="flex items-center gap-1">
                         <button
                             type="button"
