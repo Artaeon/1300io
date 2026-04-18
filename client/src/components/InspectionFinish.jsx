@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CheckCircle, FileText, Home, Download, Loader2 } from 'lucide-react';
+import { CheckCircle, Home, Download, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
 
@@ -86,18 +86,18 @@ export default function InspectionFinish() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100/50 dark:bg-gray-950">
                 <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-4 rounded-xl mb-4">{error}</div>
-                <Link to="/" className="text-blue-600 dark:text-blue-400 font-medium">Zurück zum Dashboard</Link>
+                <Link to="/" className="link-underline text-blue-600 dark:text-blue-400 font-medium">Zurück zum Dashboard</Link>
             </div>
         );
     }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gradient-to-b from-green-50 to-white dark:from-gray-950 dark:to-gray-900">
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl max-w-sm w-full">
+            <div className="hover-lift bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-8 rounded-2xl shadow-xl hover:shadow-2xl max-w-sm w-full animate-pop-in ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                 {/* Success Animation */}
                 <div className="flex justify-center mb-6">
-                    <div className="bg-green-100 dark:bg-green-900/40 p-4 rounded-full">
-                        <CheckCircle size={64} className="text-green-500 dark:text-green-400" />
+                    <div className="bg-gradient-to-br from-green-400 to-emerald-600 p-4 rounded-2xl shadow-lg animate-breathe">
+                        <CheckCircle size={64} className="text-white" />
                     </div>
                 </div>
 
@@ -121,9 +121,9 @@ export default function InspectionFinish() {
                     <button
                         onClick={handleDownloadPDF}
                         disabled={isDownloading}
-                        className={`w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all ${isDownloading
+                        className={`btn-apple w-full font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg ${isDownloading
                                 ? 'bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 cursor-not-allowed'
-                                : 'bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
+                                : 'bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white'
                             }`}
                     >
                         {isDownloading ? (
@@ -141,7 +141,7 @@ export default function InspectionFinish() {
 
                     <Link
                         to="/"
-                        className="block w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold py-4 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200 active:scale-[0.98] transition-all"
+                        className="btn-apple block w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold py-4 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-200"
                     >
                         <span className="flex items-center justify-center gap-2">
                             <Home size={20} />
