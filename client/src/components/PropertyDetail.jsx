@@ -117,9 +117,9 @@ export default function PropertyDetail() {
                 />
 
                 {/* Property Info */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5">
+                <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-5 ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <div className="flex items-center gap-2 mb-3">
-                        <Building size={20} className="text-gray-400 dark:text-gray-500" />
+                        <Building size={20} className="text-gray-400 dark:text-gray-500 animate-breathe" />
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Objektdaten</h2>
                     </div>
                     <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -132,7 +132,7 @@ export default function PropertyDetail() {
                     </div>
                     <Link
                         to={`/inspection/new/${property.id}`}
-                        className="mt-4 block w-full bg-blue-600 dark:bg-blue-500 text-white text-center font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all"
+                        className="btn-apple mt-4 block w-full bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white text-center font-bold py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     >
                         Neue Prüfung starten
                     </Link>
@@ -140,9 +140,9 @@ export default function PropertyDetail() {
 
                 {/* QR Code */}
                 {qrData && (
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5">
+                    <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-5 ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                         <div className="flex items-center gap-2 mb-3">
-                            <QrCode size={20} className="text-gray-400 dark:text-gray-500" />
+                            <QrCode size={20} className="text-gray-400 dark:text-gray-500 animate-breathe" />
                             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">QR-Code</h2>
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -155,9 +155,9 @@ export default function PropertyDetail() {
                 )}
 
                 {/* Defect Summary */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5">
+                <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-5 ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <div className="flex items-center gap-2 mb-4">
-                        <AlertTriangle size={20} className="text-red-500 dark:text-red-400" />
+                        <AlertTriangle size={20} className="text-red-500 dark:text-red-400 animate-breathe" />
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Mängel</h2>
                         {openDefects.length > 0 && (
                             <span className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -230,9 +230,9 @@ export default function PropertyDetail() {
                 </div>
 
                 {/* Inspection History */}
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5">
+                <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-5 ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <div className="flex items-center gap-2 mb-4">
-                        <FileText size={20} className="text-gray-400 dark:text-gray-500" />
+                        <FileText size={20} className="text-gray-400 dark:text-gray-500 animate-breathe" />
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Prüfhistorie</h2>
                     </div>
 
@@ -253,7 +253,7 @@ export default function PropertyDetail() {
                                     </div>
                                     <button
                                         onClick={() => handleDownloadPDF(insp.id)}
-                                        className="flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
+                                        className="link-underline flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium"
                                     >
                                         <Download size={16} />
                                         PDF
