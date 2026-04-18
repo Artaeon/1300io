@@ -341,8 +341,8 @@ export default function InspectionWizard() {
         const draftDate = new Date(existingDraft.createdAt || existingDraft.date).toLocaleDateString('de-AT');
         return (
             <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100/50 dark:bg-gray-950">
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-xl max-w-sm w-full text-center">
-                    <RotateCcw size={48} className="text-blue-600 dark:text-blue-400 mx-auto mb-4" />
+                <div className="hover-lift bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl p-6 rounded-2xl shadow-xl hover:shadow-2xl max-w-sm w-full text-center animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
+                    <RotateCcw size={48} className="text-blue-600 dark:text-blue-400 mx-auto mb-4 animate-breathe" />
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">Offener Entwurf</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">
                         Es gibt einen offenen Entwurf vom {draftDate}. Möchten Sie diesen fortsetzen oder eine neue Prüfung starten?
@@ -351,7 +351,7 @@ export default function InspectionWizard() {
                         <button
                             type="button"
                             onClick={() => resumeDraft(existingDraft.id)}
-                            className="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-3 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
+                            className="btn-apple w-full bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-bold py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
                         >
                             Entwurf fortsetzen
                         </button>
@@ -361,14 +361,14 @@ export default function InspectionWizard() {
                                 await discardDraft();
                                 await createNewInspection();
                             }}
-                            className="w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                            className="btn-apple w-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
                         >
                             Entwurf verwerfen &amp; neu starten
                         </button>
                         <button
                             type="button"
                             onClick={() => navigate('/')}
-                            className="w-full text-gray-500 dark:text-gray-400 py-2 hover:text-gray-700 dark:hover:text-gray-200 transition focus:outline-none focus-visible:underline"
+                            className="link-underline w-full text-gray-500 dark:text-gray-400 py-2 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus-visible:underline"
                         >
                             Zurück zum Dashboard
                         </button>
@@ -577,7 +577,7 @@ export default function InspectionWizard() {
                                         <textarea
                                             id={`comment-${item.id}`}
                                             placeholder="Beschreibung des Mangels..."
-                                            className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                            className="input-apple w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                             rows={3}
                                             maxLength={2000}
                                             value={answer.comment || ''}
@@ -607,9 +607,9 @@ export default function InspectionWizard() {
                 <button
                     onClick={handleNext}
                     disabled={isButtonDisabled}
-                    className={`w-full font-bold text-xl py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${isButtonDisabled
+                    className={`btn-apple w-full font-bold text-xl py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 ${isButtonDisabled
                             ? 'bg-gray-400 dark:bg-gray-600 text-gray-200 dark:text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
+                            : 'bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white'
                         }`}
                 >
                     {isSaving ? (
