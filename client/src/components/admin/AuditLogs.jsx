@@ -68,7 +68,7 @@ export default function AuditLogs() {
                             id="filter-entity"
                             value={filterEntity}
                             onChange={(e) => { setFilterEntity(e.target.value); setPage(1); }}
-                            className="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100"
+                            className="input-apple p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 outline-none"
                         >
                             {ENTITY_TYPES.map((t) => <option key={t || 'all'} value={t}>{t || 'Alle'}</option>)}
                         </select>
@@ -79,7 +79,7 @@ export default function AuditLogs() {
                             id="filter-action"
                             value={filterAction}
                             onChange={(e) => { setFilterAction(e.target.value); setPage(1); }}
-                            className="p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100"
+                            className="input-apple p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-900 dark:text-gray-100 outline-none"
                         >
                             {ACTIONS.map((a) => <option key={a || 'all'} value={a}>{a || 'Alle'}</option>)}
                         </select>
@@ -95,7 +95,7 @@ export default function AuditLogs() {
                         Keine Einträge gefunden.
                     </div>
                 ) : (
-                    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg overflow-hidden ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                         {logs.map((log) => (
                             <div key={log.id} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
                                 <button

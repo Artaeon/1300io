@@ -141,7 +141,7 @@ export default function OrganizationManagement() {
                 <button
                     type="button"
                     onClick={openCreate}
-                    className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 text-sm font-medium active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950"
+                    className="btn-apple flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
                 >
                     <Plus size={16} />
                     Neue Organisation
@@ -155,7 +155,7 @@ export default function OrganizationManagement() {
                     <button
                         type="button"
                         onClick={openCreate}
-                        className="text-blue-600 dark:text-blue-400 font-medium"
+                        className="link-underline text-blue-600 dark:text-blue-400 font-medium"
                     >
                         Erste Organisation anlegen
                     </button>
@@ -165,7 +165,7 @@ export default function OrganizationManagement() {
                     {organizations.map((org) => {
                         const orgUsers = getOrgUsers(org.id);
                         return (
-                            <div key={org.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5">
+                            <div key={org.id} className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-5 ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
                                         <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{org.name}</h3>
@@ -274,7 +274,7 @@ export default function OrganizationManagement() {
                             type="text"
                             autoComplete="organization"
                             required
-                            className="w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            className="input-apple w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="z.B. Hausverwaltung Müller GmbH"
@@ -284,14 +284,14 @@ export default function OrganizationManagement() {
                         <button
                             type="button"
                             onClick={() => setShowModal(false)}
-                            className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            className="btn-apple flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
                         >
                             Abbrechen
                         </button>
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex-1 py-3 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="btn-apple flex-1 py-3 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
                             {saving && <Loader2 size={16} className="animate-spin" />}
                             {saving ? 'Speichern…' : 'Speichern'}

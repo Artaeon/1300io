@@ -110,7 +110,7 @@ export default function UserManagement() {
                 <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Benutzer ({users.length})</h2>
                 <button
                     onClick={openCreate}
-                    className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 font-medium text-sm active:scale-[0.98] transition-all"
+                    className="btn-apple flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white px-4 py-2 rounded-xl font-medium text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                     <Plus size={16} /> Neuer Benutzer
                 </button>
@@ -121,7 +121,7 @@ export default function UserManagement() {
                     <Loader2 size={32} className="animate-spin text-blue-600 dark:text-blue-400" />
                 </div>
             ) : (
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+                <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg overflow-hidden ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
@@ -177,7 +177,7 @@ export default function UserManagement() {
                             type="text"
                             autoComplete="name"
                             required
-                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            className="input-apple w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                             value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                         />
                     </div>
@@ -188,7 +188,7 @@ export default function UserManagement() {
                             type="email"
                             autoComplete="email"
                             required
-                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            className="input-apple w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                             value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                         />
                     </div>
@@ -203,7 +203,7 @@ export default function UserManagement() {
                             required={!editingUser}
                             minLength={12}
                             title="Mindestens 12 Zeichen, Groß- und Kleinbuchstaben sowie eine Ziffer"
-                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            className="input-apple w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                             value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                         />
                         {!editingUser && (
@@ -216,7 +216,7 @@ export default function UserManagement() {
                         <label htmlFor="user-role" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rolle</label>
                         <select
                             id="user-role"
-                            className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            className="input-apple w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 outline-none"
                             value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
                         >
                             {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
@@ -224,11 +224,11 @@ export default function UserManagement() {
                     </div>
                     <div className="flex gap-3 pt-2">
                         <button type="button" onClick={() => setShowModal(false)}
-                            className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all">
+                            className="btn-apple flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700">
                             Abbrechen
                         </button>
                         <button type="submit" disabled={saving}
-                            className="flex-1 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                            className="btn-apple flex-1 py-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                             {saving && <Loader2 size={16} className="animate-spin" />}
                             {saving ? 'Speichern…' : 'Speichern'}
                         </button>

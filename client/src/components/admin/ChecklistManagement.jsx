@@ -173,7 +173,7 @@ export default function ChecklistManagement() {
                 <button
                     type="button"
                     onClick={openCreateCategory}
-                    className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 font-medium text-sm active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950"
+                    className="btn-apple flex items-center gap-2 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white px-4 py-2 rounded-xl font-medium text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
                 >
                     <Plus size={16} /> Kategorie
                 </button>
@@ -186,14 +186,14 @@ export default function ChecklistManagement() {
             ) : categories.length === 0 ? (
                 <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                     <p className="mb-2">Noch keine Kategorien.</p>
-                    <button type="button" onClick={openCreateCategory} className="text-blue-600 dark:text-blue-400 font-medium">
+                    <button type="button" onClick={openCreateCategory} className="link-underline text-blue-600 dark:text-blue-400 font-medium">
                         Erste Kategorie anlegen
                     </button>
                 </div>
             ) : (
                 <div className="space-y-3">
                     {categories.map((cat) => (
-                        <div key={cat.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+                        <div key={cat.id} className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg overflow-hidden ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                             <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
                                 <button
                                     type="button"
@@ -298,7 +298,7 @@ export default function ChecklistManagement() {
                                 id="checklist-name"
                                 type="text"
                                 required
-                                className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                className="input-apple w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                 value={form.name || ''}
                                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                             />
@@ -307,7 +307,7 @@ export default function ChecklistManagement() {
                                 id="checklist-name"
                                 required
                                 rows={3}
-                                className="w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                className="input-apple w-full p-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                 value={form.text || ''}
                                 onChange={(e) => setForm((f) => ({ ...f, text: e.target.value }))}
                             />
@@ -317,14 +317,14 @@ export default function ChecklistManagement() {
                         <button
                             type="button"
                             onClick={() => setModal(null)}
-                            className="flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            className="btn-apple flex-1 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
                         >
                             Abbrechen
                         </button>
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex-1 py-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="btn-apple flex-1 py-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-medium disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                         >
                             {saving && <Loader2 size={16} className="animate-spin" />}
                             {saving ? 'Speichern…' : 'Speichern'}
