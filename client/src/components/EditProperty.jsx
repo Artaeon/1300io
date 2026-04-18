@@ -112,10 +112,10 @@ export default function EditProperty() {
     }
 
     const inputClass = (field) =>
-        `w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 outline-none transition-all ${
+        `input-apple w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none ${
             fieldErrors[field]
-                ? 'ring-2 ring-red-500 focus:ring-red-500'
-                : 'focus:ring-blue-500 dark:focus:ring-blue-400'
+                ? 'ring-2 ring-red-500'
+                : ''
         }`;
 
     return (
@@ -138,7 +138,7 @@ export default function EditProperty() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} noValidate className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm">
+            <form onSubmit={handleSubmit} noValidate className="hover-lift space-y-6 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                 <div>
                     <label htmlFor="edit-property-address" className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
                         <Building size={16} className="mr-2" /> Adresse
@@ -207,14 +207,14 @@ export default function EditProperty() {
                     <button
                         type="button"
                         onClick={() => navigate('/')}
-                        className="flex-1 py-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-[0.98] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
+                        className="btn-apple flex-1 py-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
                     >
                         Abbrechen
                     </button>
                     <button
                         type="submit"
                         disabled={saving || !isDirty}
-                        className="flex-1 bg-blue-600 dark:bg-blue-500 text-white font-bold py-4 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
+                        className="btn-apple flex-1 bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-bold py-4 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-950"
                     >
                         {saving && <Loader2 size={18} className="animate-spin" />}
                         {saving ? 'Speichern…' : 'Änderungen speichern'}
