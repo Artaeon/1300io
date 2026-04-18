@@ -6,12 +6,12 @@ export default function Datenschutz() {
     return (
         <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 py-8 px-4">
             <div className="max-w-2xl mx-auto">
-                <Link to="/" className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-6">
+                <Link to="/" className="link-underline inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-6">
                     <ArrowLeft size={18} />
                     Zurück
                 </Link>
 
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-8">
+                <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-8 animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Datenschutzerklärung</h1>
 
                     <div className="space-y-6 text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
@@ -22,7 +22,7 @@ export default function Datenschutz() {
                                 <strong>Stoicera GesbR</strong><br />
                                 Allerheiligen im Mühlkreis 7<br />
                                 4320 Perg, Österreich<br />
-                                E-Mail: <a href="mailto:office@stoicera.com" className="text-blue-600 dark:text-blue-400 hover:underline">office@stoicera.com</a>
+                                E-Mail: <a href="mailto:office@stoicera.com" className="link-underline text-blue-600 dark:text-blue-400">office@stoicera.com</a>
                             </p>
                         </section>
 
@@ -87,7 +87,7 @@ export default function Datenschutz() {
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">7. Kontakt</h2>
                             <p>
                                 Bei Fragen zum Datenschutz wenden Sie sich bitte an:<br />
-                                <a href="mailto:office@stoicera.com" className="text-blue-600 dark:text-blue-400 hover:underline">office@stoicera.com</a>
+                                <a href="mailto:office@stoicera.com" className="link-underline text-blue-600 dark:text-blue-400">office@stoicera.com</a>
                             </p>
                         </section>
 

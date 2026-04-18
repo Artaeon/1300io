@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function NotFound() {
     return (
         <div className="min-h-screen bg-gray-100/50 dark:bg-gray-950 flex items-center justify-center px-4">
-            <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-8 text-center">
+            <div className="hover-lift max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-xl p-8 text-center animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                 <p className="text-5xl font-bold text-gray-900 dark:text-gray-100 mb-2">404</p>
                 <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                     Seite nicht gefunden
@@ -14,7 +14,7 @@ export default function NotFound() {
                 </p>
                 <Link
                     to="/"
-                    className="inline-block px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                    className="btn-apple inline-block px-5 py-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                     Zur Startseite
                 </Link>

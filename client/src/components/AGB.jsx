@@ -8,13 +8,13 @@ export default function AGB() {
             <div className="max-w-3xl mx-auto">
                 <Link
                     to="/"
-                    className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-6"
+                    className="link-underline inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 mb-6"
                 >
                     <ArrowLeft size={18} />
                     Zurück
                 </Link>
 
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-8">
+                <div className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg p-8 animate-fade-in-up ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                         Allgemeine Geschäftsbedingungen
                     </h1>
@@ -101,7 +101,7 @@ export default function AGB() {
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">7. Datenschutz</h2>
                             <p>
                                 Die Verarbeitung personenbezogener Daten erfolgt gemäß der
-                                <Link to="/datenschutz" className="text-blue-600 dark:text-blue-400 hover:underline"> Datenschutzerklärung</Link>.
+                                <Link to="/datenschutz" className="link-underline text-blue-600 dark:text-blue-400"> Datenschutzerklärung</Link>.
                                 Der Kunde bleibt Eigentümer der von ihm hochgeladenen Daten und räumt
                                 dem Anbieter lediglich die zur Erbringung der Leistung notwendigen
                                 Nutzungsrechte ein.

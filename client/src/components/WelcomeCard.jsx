@@ -38,7 +38,7 @@ export default function WelcomeCard({ userName }) {
     return (
         <section
             aria-labelledby="welcome-heading"
-            className="relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-100 dark:border-blue-900/40 rounded-2xl p-5 overflow-hidden"
+            className="hover-lift relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-100 dark:border-blue-900/40 rounded-2xl p-5 overflow-hidden animate-fade-in-up"
         >
             <button
                 type="button"
@@ -76,7 +76,7 @@ export default function WelcomeCard({ userName }) {
 function Step({ index, Icon, title, children }) {
     return (
         <li className="flex items-start gap-3">
-            <div className="shrink-0 w-8 h-8 rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-white dark:bg-gray-900 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-100/70 dark:ring-blue-900/60">
                 <Icon size={16} />
             </div>
             <div>
