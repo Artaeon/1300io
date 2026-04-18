@@ -29,7 +29,7 @@ export default function Datenschutz() {
                         <section>
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">2. Erhobene Daten</h2>
                             <p>
-                                Bei der Nutzung von PropSecure werden folgende personenbezogene Daten verarbeitet:
+                                Bei der Nutzung von 1300.io werden folgende personenbezogene Daten verarbeitet:
                             </p>
                             <ul className="list-disc list-inside mt-2 space-y-1">
                                 <li>E-Mail-Adresse und Name bei der Registrierung</li>
