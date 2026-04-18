@@ -65,10 +65,10 @@ export default function AddProperty() {
     };
 
     const inputClass = (field) =>
-        `w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 outline-none transition-all ${
+        `input-apple w-full p-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none ${
             fieldErrors[field]
-                ? 'ring-2 ring-red-500 focus:ring-red-500'
-                : 'focus:ring-blue-500 dark:focus:ring-blue-400'
+                ? 'ring-2 ring-red-500'
+                : ''
         }`;
 
     return (
@@ -88,7 +88,7 @@ export default function AddProperty() {
             <form
                 onSubmit={handleSubmit}
                 noValidate
-                className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm"
+                className="hover-lift space-y-6 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm hover:shadow-lg ring-1 ring-gray-200/60 dark:ring-gray-800/60"
             >
                 <div>
                     <label htmlFor="property-address" className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center">
@@ -160,7 +160,7 @@ export default function AddProperty() {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="w-full bg-blue-600 dark:bg-blue-500 text-white font-bold py-4 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                    className="btn-apple w-full bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white font-bold py-4 rounded-xl disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900"
                 >
                     {saving && <Loader2 size={18} className="animate-spin" />}
                     {saving ? 'Speichern…' : 'Speichern'}
