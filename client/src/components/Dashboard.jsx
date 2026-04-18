@@ -229,7 +229,7 @@ export default function Dashboard() {
                 {history.length > 0 && (
                     <section>
                         <div className="flex items-center gap-2 mb-4">
-                            <Clock size={20} className="text-gray-400 dark:text-gray-500" />
+                            <Clock size={20} className="text-gray-400 dark:text-gray-500 animate-breathe" />
                             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Aktuelle Prüfungen</h2>
                         </div>
 
@@ -262,7 +262,7 @@ export default function Dashboard() {
                                                 <td className="px-4 py-3 text-center">
                                                     <button
                                                         onClick={() => handleDownloadPDF(insp.id)}
-                                                        className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+                                                        className="link-underline inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                                                     >
                                                         <Download size={16} />
                                                         <span className="hidden sm:inline">PDF</span>
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 {/* SECTION 2: Properties List */}
                 <section>
                     <div className="flex items-center gap-2 mb-4">
-                        <Building size={20} className="text-gray-400 dark:text-gray-500" />
+                        <Building size={20} className="text-gray-400 dark:text-gray-500 animate-breathe" />
                         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Meine Objekte</h2>
                         <span className="text-sm text-gray-500 dark:text-gray-400">({totalProperties})</span>
                     </div>
@@ -294,7 +294,7 @@ export default function Dashboard() {
                                 id="property-search"
                                 type="search"
                                 placeholder="Objekte suchen..."
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                                className="input-apple w-full pl-10 pr-4 py-2.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
                                 value={search}
                                 onChange={(e) => handleSearchChange(e.target.value)}
                             />
@@ -308,7 +308,7 @@ export default function Dashboard() {
                                 setSort(k);
                                 setSortDir(d);
                             }}
-                            className="py-2.5 px-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 text-sm focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none"
+                            className="input-apple py-2.5 px-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-900 dark:text-gray-100 text-sm outline-none"
                         >
                             <option value="createdAt:desc">Neueste zuerst</option>
                             <option value="createdAt:asc">Älteste zuerst</option>
@@ -355,7 +355,7 @@ export default function Dashboard() {
                                 <SkeletonPropertyCard />
                             </>
                         ) : properties.map(prop => (
-                            <div key={prop.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
+                            <div key={prop.id} className="hover-lift bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-lg overflow-hidden ring-1 ring-gray-200/60 dark:ring-gray-800/60">
                                 <div className="p-5">
                                     {/* Status Badge & Actions */}
                                     <div className="flex justify-between items-start mb-3">
@@ -404,7 +404,7 @@ export default function Dashboard() {
                                     {/* Action Button */}
                                     <Link
                                         to={`/inspection/new/${prop.id}`}
-                                        className="block w-full bg-blue-600 dark:bg-blue-500 text-white text-center font-bold py-3 rounded-xl shadow hover:shadow-lg active:scale-[0.98] transition-all"
+                                        className="btn-apple block w-full bg-gradient-to-br from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-600 text-white text-center font-bold py-3 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                     >
                                         Neue Prüfung starten
                                     </Link>
@@ -421,7 +421,7 @@ export default function Dashboard() {
                                         <button
                                             type="button"
                                             onClick={() => handleSearchChange('')}
-                                            className="text-blue-600 dark:text-blue-400 font-medium mt-2"
+                                            className="link-underline text-blue-600 dark:text-blue-400 font-medium mt-2"
                                         >
                                             Suche zurücksetzen
                                         </button>
@@ -434,7 +434,7 @@ export default function Dashboard() {
                                         </p>
                                         <Link
                                             to="/properties/new"
-                                            className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium"
+                                            className="link-underline inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 font-medium"
                                         >
                                             <Plus size={16} /> Erstes Objekt anlegen
                                         </Link>
@@ -494,7 +494,7 @@ export default function Dashboard() {
                 to="/properties/new"
                 aria-label="Neues Objekt hinzufügen"
                 title="Neues Objekt"
-                className="fixed right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-100 transition-transform active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/50"
+                className="btn-apple fixed right-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-4 rounded-full shadow-2xl flex items-center justify-center hover:bg-gray-800 dark:hover:bg-gray-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/50"
                 style={{ bottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }}
             >
                 <Plus size={28} />
