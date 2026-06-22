@@ -18,7 +18,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "^1.61.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2"
   },
