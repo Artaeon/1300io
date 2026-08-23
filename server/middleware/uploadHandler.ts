@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { config } from '../config';
 
 export const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
@@ -16,9 +17,12 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename(_req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, uniqueSuffix + ext);
+    const extensionByMime: Record<string, string> = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+    };
+    cb(null, `${randomUUID()}${extensionByMime[file.mimetype]}`);
   },
 });
 

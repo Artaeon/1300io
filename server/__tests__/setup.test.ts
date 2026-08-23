@@ -49,6 +49,27 @@ describe('Setup wizard', () => {
     await prisma.user.deleteMany({});
   });
 
+  it('allows only one concurrent initialization', async () => {
+    const first = request(app)
+      .post('/api/setup/initialize')
+      .send({ admin: ADMIN, organization: ORG });
+    const second = request(app)
+      .post('/api/setup/initialize')
+      .send({
+        admin: { ...ADMIN, email: 'other-owner@1300.test' },
+        organization: { name: 'Other Organization' },
+      });
+
+    const responses = await Promise.all([first, second]);
+    expect(responses.map((response) => response.status).sort()).toEqual([201, 409]);
+    expect(await prisma.user.count({ where: { role: 'ADMIN' } })).toBe(1);
+    expect(await prisma.organization.count()).toBe(1);
+
+    await prisma.auditLog.deleteMany({});
+    await prisma.user.deleteMany({});
+    await prisma.organization.deleteMany({});
+  });
+
   it('initialize creates admin + org, returns working tokens', async () => {
     const res = await request(app)
       .post('/api/setup/initialize')

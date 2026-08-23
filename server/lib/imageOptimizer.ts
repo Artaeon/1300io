@@ -59,5 +59,14 @@ export async function optimize(filePath: string): Promise<void> {
     } catch {
       /* tmp may not exist */
     }
+    try {
+      await fs.unlink(filePath);
+    } catch {
+      /* original may already be gone */
+    }
+    throw Object.assign(new Error('Invalid image data'), {
+      statusCode: 400,
+      expose: true,
+    });
   }
 }

@@ -19,6 +19,7 @@ import { originCheck } from './middleware/originCheck';
 import { globalLimiter, loginLimiter } from './middleware/rateLimiters';
 import { checkLockout } from './middleware/accountLockout';
 import { uploadDir } from './middleware/uploadHandler';
+import { authenticateToken } from './middleware/auth';
 
 import * as sentry from './observability/sentry';
 import { metricsMiddleware, metricsHandler } from './observability/metrics';
@@ -70,8 +71,20 @@ app.use(originCheck);
 app.use(globalLimiter);
 app.use(express.json({ limit: '1mb' }));
 
-// Serve uploaded files (static)
-app.use('/uploads', express.static(uploadDir));
+// Inspection photos may contain personal or property data. They must
+// never be available as unauthenticated static assets.
+app.use(
+  '/uploads',
+  authenticateToken,
+  express.static(uploadDir, {
+    dotfiles: 'deny',
+    fallthrough: false,
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    },
+  }),
+);
 
 // --- Health + metrics ---
 // /health, /healthz, /readyz are distinct on purpose:
@@ -133,9 +146,9 @@ app.get(
   '/metrics',
   asyncHandler(async (req, res) => {
     const token = process.env.METRICS_TOKEN;
-    if (isProduction && token) {
+    if (isProduction) {
       const auth = req.get('authorization');
-      if (auth !== `Bearer ${token}`) {
+      if (!token || auth !== `Bearer ${token}`) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
       }

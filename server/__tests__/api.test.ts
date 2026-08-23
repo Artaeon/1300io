@@ -744,19 +744,37 @@ describe('File Upload', () => {
   });
 
   it('POST /api/upload should accept a valid image', async () => {
-    // Create a minimal valid JPEG buffer
-    const jpegHeader = Buffer.from([
-      0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
-      0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01,
-      0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9
-    ]);
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64',
+    );
 
     const res = await request(app)
       .post('/api/upload')
       .set('Authorization', `Bearer ${authToken}`)
-      .attach('photo', jpegHeader, { filename: 'test.jpg', contentType: 'image/jpeg' });
+      .attach('photo', png, { filename: 'test.png', contentType: 'image/png' });
     expect(res.status).toBe(200);
     expect(res.body.url).toMatch(/^\/uploads\//);
+
+    const unauthenticated = await request(app).get(res.body.url);
+    expect(unauthenticated.status).toBe(401);
+
+    const authenticated = await request(app)
+      .get(res.body.url)
+      .set('Authorization', `Bearer ${authToken}`);
+    expect(authenticated.status).toBe(200);
+    expect(authenticated.headers['cache-control']).toBe('private, no-store');
+  });
+
+  it('POST /api/upload should reject spoofed image content', async () => {
+    const res = await request(app)
+      .post('/api/upload')
+      .set('Authorization', `Bearer ${authToken}`)
+      .attach('photo', Buffer.from('not an image'), {
+        filename: 'spoofed.jpg',
+        contentType: 'image/jpeg',
+      });
+    expect(res.status).toBe(400);
   });
 });
 

@@ -6,6 +6,69 @@ import { useBeforeUnload } from '../hooks/useBeforeUnload';
 import PhotoLightbox from './ui/PhotoLightbox';
 import { Camera, Check, AlertTriangle, XCircle, ArrowRight, Loader2, RotateCcw, ZoomIn, Trash2 } from 'lucide-react';
 
+function AuthenticatedPhoto({ url, authFetch, onOpen }) {
+    const [objectUrl, setObjectUrl] = useState(null);
+    const [failed, setFailed] = useState(false);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        let createdUrl = null;
+
+        authFetch(url, { signal: controller.signal })
+            .then((response) => {
+                if (!response.ok) throw new Error('Photo unavailable');
+                return response.blob();
+            })
+            .then((blob) => {
+                if (controller.signal.aborted) return;
+                createdUrl = URL.createObjectURL(blob);
+                setObjectUrl(createdUrl);
+            })
+            .catch((error) => {
+                if (error.name !== 'AbortError') setFailed(true);
+            });
+
+        return () => {
+            controller.abort();
+            if (createdUrl) URL.revokeObjectURL(createdUrl);
+        };
+    }, [url, authFetch]);
+
+    if (failed) {
+        return (
+            <div className="w-full h-48 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-sm text-red-700 dark:text-red-300">
+                Foto konnte nicht geladen werden
+            </div>
+        );
+    }
+
+    if (!objectUrl) {
+        return (
+            <div className="w-full h-48 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                <Loader2 className="animate-spin text-gray-400" size={24} />
+            </div>
+        );
+    }
+
+    return (
+        <button
+            type="button"
+            onClick={() => onOpen(objectUrl)}
+            aria-label="Foto vergrößern"
+            className="block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl"
+        >
+            <img
+                src={objectUrl}
+                alt="Dokumentierter Mangel"
+                className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
+            />
+            <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <ZoomIn className="text-white drop-shadow" size={28} />
+            </div>
+        </button>
+    );
+}
+
 export default function InspectionWizard() {
     const { propertyId } = useParams();
     const navigate = useNavigate();
@@ -530,21 +593,12 @@ export default function InspectionWizard() {
 
                                     {answer.photoUrl && (
                                         <div className="relative group">
-                                            <button
-                                                type="button"
-                                                onClick={() => setLightboxSrc(answer.photoUrl)}
-                                                aria-label="Foto vergrößern"
-                                                className="block w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl"
-                                            >
-                                                <img
-                                                    src={answer.photoUrl}
-                                                    alt="Dokumentierter Mangel"
-                                                    className="w-full h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
-                                                />
-                                                <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                                    <ZoomIn className="text-white drop-shadow" size={28} />
-                                                </div>
-                                            </button>
+                                            <AuthenticatedPhoto
+                                                key={answer.photoUrl}
+                                                url={answer.photoUrl}
+                                                authFetch={authFetch}
+                                                onOpen={setLightboxSrc}
+                                            />
                                             <div className="absolute top-2 right-2 flex gap-1">
                                                 <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-lg">
                                                     Hochgeladen

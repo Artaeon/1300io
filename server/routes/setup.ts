@@ -77,9 +77,10 @@ router.post(
     refreshExpiresAt.setDate(refreshExpiresAt.getDate() + REFRESH_TOKEN_EXPIRY_DAYS);
 
     // Re-check inside the transaction so two concurrent POSTs cannot
-    // both succeed. The count() runs on the same snapshot as the
-    // create(), so the second one sees the first and aborts.
+    // both succeed. A transaction-scoped PostgreSQL advisory lock
+    // serializes the one-time initialization across every app instance.
     const result = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`LOCK TABLE "User" IN SHARE ROW EXCLUSIVE MODE`;
       const alreadyAdmin = await tx.user.count({ where: { role: 'ADMIN' } });
       if (alreadyAdmin > 0) {
         throw Object.assign(new Error('ALREADY_INITIALIZED'), { kind: 'conflict' });

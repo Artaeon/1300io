@@ -66,4 +66,9 @@ export function validateConfig(): void {
     console.error('Either disable the gate or configure an SMTP server.');
     process.exit(1);
   }
+
+  if (isProduction && !process.env.METRICS_TOKEN) {
+    console.error('FATAL: METRICS_TOKEN is required in production.');
+    process.exit(1);
+  }
 }
