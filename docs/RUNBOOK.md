@@ -143,9 +143,10 @@ Look at metrics first:
 
 ### Rate-limit hits in logs
 
-`Too many requests` 429s are normal under abuse but a steady stream from legitimate traffic means the limits are too tight. Adjust in `server/middleware/rateLimiters.js`. Most likely culprit: PDF generation for organizations with many inspections per minute.
+`Too many requests` 429s are normal under abuse but a steady stream from legitimate traffic means the limits are too tight. Adjust in `server/middleware/rateLimiters.ts`. Most likely culprit: PDF generation for organizations with many inspections per minute.
 
 ## Escalation
 
-Security issues: `security@stoicera.com` (see [SECURITY.md](../SECURITY.md)).
-Everything else: `office@stoicera.com`.
+Report security issues through the private channel documented in
+[SECURITY.md](../SECURITY.md). Use GitHub Issues for reproducible bugs and
+feature requests that do not contain confidential information.

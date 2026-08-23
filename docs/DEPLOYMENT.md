@@ -28,10 +28,13 @@ Copy `.env.example` to `.env` and fill in:
 | `POSTGRES_PASSWORD` | yes | Generate, store in a secret manager |
 | `POSTGRES_USER`, `POSTGRES_DB` | no | Defaults `onorm1300` / `onorm1300` |
 | `FRONTEND_URL` | yes | The public HTTPS origin, e.g. `https://app.example.com` |
-| `METRICS_TOKEN` | recommended | Bearer token required for `/metrics` in prod |
+| `METRICS_TOKEN` | yes | Bearer token required for `/metrics` in production |
 | `SENTRY_DSN` | optional | Error tracking. Install `@sentry/node` to enable |
 | `VITE_SENTRY_DSN` | optional | Client-side Sentry |
-| `VITE_IMPRESSUM_PHONE` | optional | Shown on /impressum; omitted if blank |
+| `VITE_LEGAL_NAME` | yes | Legal name shown on the imprint and footer |
+| `VITE_LEGAL_ADDRESS` | yes | Postal address; use `|` to separate displayed lines |
+| `VITE_LEGAL_EMAIL` | yes | Public legal and privacy contact address |
+| `VITE_LEGAL_PHONE` | optional | Telephone number; omitted when blank |
 
 `NODE_ENV=production` is set in the compose file — don't override it.
 
@@ -53,7 +56,7 @@ docker compose -f docker-compose.prod.yml up -d
 docker compose -f docker-compose.prod.yml exec server npm run db:seed
 docker compose -f docker-compose.prod.yml exec -e ADMIN_EMAIL=you@example.com \
   -e ADMIN_PASSWORD='<at-least-12-chars-Mixed-case-with-digits>' \
-  -e ADMIN_NAME='You' \
+  -e ADMIN_NAME='Initial Administrator' \
   server npm run db:seed:admin
 ```
 

@@ -9,17 +9,17 @@ Thank you for your interest in contributing. This document outlines the developm
 git clone https://github.com/Artaeon/1300io.git
 cd 1300io
 
-# Configure environment
-cp .env.example .env
-# Edit .env: set JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
+# Install deterministic dependencies
+npm ci --workspaces=false
+cd server && npm ci && cd ..
+cd client && npm ci && cd ..
 
-# Option A: Docker (recommended)
-docker-compose up -d --build
+# Start isolated development infrastructure
+./scripts/local-test-db.sh start
+./scripts/local-mailhog.sh start
 
-# Option B: Local
-cd server && npm install && npm run dev
-# In a separate terminal:
-cd client && npm install && npm run dev
+# Follow the local-development section in README.md for migrations,
+# seed data, and the two development servers.
 ```
 
 ## Branching Model
@@ -60,8 +60,8 @@ chore(infra): update node base image to 22-alpine
 
 ## Code Style
 
-- **Backend (server/)**: CommonJS modules, ESLint (not yet configured for backend)
-- **Frontend (client/)**: ES modules, ESLint configured (run `npm run lint`)
+- **Backend (`server/`)**: strict TypeScript; run `npm run lint` and `npm run typecheck`
+- **Frontend (`client/`)**: ES modules; run `npm run lint`
 - Use clear, descriptive variable and function names
 - Keep functions focused and short
 - No unused imports or variables
@@ -71,10 +71,11 @@ chore(infra): update node base image to 22-alpine
 1. Create a feature branch from `main`
 2. Make your changes with clear, conventional commits
 3. Ensure all tests pass: `npm test` in both `server/` and `client/`
-4. Ensure linting passes: `npm run lint` in `client/`
-5. Open a pull request against `main`
-6. Describe what your PR does and why
-7. Link any related issues
+4. Ensure backend linting, type checking, and builds pass
+5. Ensure frontend linting and the production build pass
+6. Open a pull request against `main`
+7. Describe what your PR does, why it is needed, and how it was verified
+8. Link any related issues
 
 Pull requests require at least one review before merging.
 
@@ -83,6 +84,9 @@ Pull requests require at least one review before merging.
 - Write tests for new features and bug fixes
 - Backend tests: `cd server && npm test` (Vitest)
 - Frontend tests: `cd client && npm test` (Vitest + Testing Library)
+- Backend quality gates: `cd server && npm run lint && npm run typecheck && npm run build`
+- Frontend quality gates: `cd client && npm run lint && npm run build`
+- Dependency review: run `npm audit` at the root and in both packages
 - Aim for meaningful coverage of business logic and API endpoints
 
 ## Reporting Issues

@@ -20,7 +20,7 @@
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg">
   <img alt="Node" src="https://img.shields.io/badge/node-22.x-339933?logo=node.js&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-3178c6?logo=typescript&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-189%20server%20%2F%2036%20client-brightgreen">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-199%20server%20%2F%2036%20client-brightgreen">
   <img alt="Language" src="https://img.shields.io/badge/UI-Deutsch-black">
 </p>
 
@@ -28,7 +28,7 @@
 
 ## Overview
 
-1300.io is a mobile-first inspection platform built for Austrian property managers (*Hausverwaltungen*). It streamlines the legally mandated ÖNORM B 1300 safety inspection workflow — from on-site checklist completion to court-admissible PDF report generation — in a single paperless application.
+1300.io is a mobile-first inspection platform built for Austrian property managers (*Hausverwaltungen*). It supports ÖNORM B 1300 safety inspection workflows — from on-site checklist completion to documented PDF reports — in a single paperless application.
 
 **Walk through a building with your phone, tick off the standardized checklist, photograph defects on the spot, and hand the owner a signed PDF report before you leave the staircase.**
 
@@ -36,7 +36,7 @@
 
 - **Mobile-first UI** — iOS-style frosted glass, one-handed operation, full dark mode, German throughout
 - **Integrated camera** — document defects with photos directly within the inspection flow
-- **Instant PDF reports** — professional reports with embedded photos, compliant with Austrian legal standards
+- **Instant PDF reports** — professional reports with embedded photos and a reproducible inspection record
 - **Email verification + password reset** — self-service flows via real SMTP (MailHog for local dev)
 - **Role-based access** — Admin, Manager, Inspector, Read-only with granular permissions
 - **Multi-organization support** — manage multiple Hausverwaltungen from a single instance
@@ -52,7 +52,8 @@
 - Per-email account lockout after repeated failures (credential-stuffing defense)
 - Rate limits on `/api/auth/*`, `/api/upload`, and global API; CORS restricted to `FRONTEND_URL`
 - Helmet + strict CSP, X-Frame-Options, Referrer-Policy, no-sniff
-- Every request carries a `X-Request-Id` that appears in logs, error bodies, traces
+- Every request carries a `X-Request-Id` that appears in logs, error bodies, and traces
+- Uploaded photos require authentication, use non-guessable names, and are decoded before storage
 - Prometheus metrics at `/metrics` (bearer-token-gated in prod) and OpenAPI/Swagger at `/api/docs`
 - Optional OpenTelemetry tracing (OTLP/HTTP) — point at Jaeger / Tempo / Honeycomb with one env var
 
@@ -160,12 +161,12 @@ cp .env.example .env
 #   POSTGRES_PASSWORD=<a strong value>
 #   ADMIN_EMAIL, ADMIN_PASSWORD (first admin user)
 
-docker-compose up -d --build
+docker compose up -d --build
 
 # First-run database setup
-docker-compose exec server npm run db:migrate:deploy
-docker-compose exec server npm run db:seed        # ÖNORM categories + items
-docker-compose exec server npm run db:seed:admin  # initial admin user
+docker compose exec server npm run db:migrate:deploy
+docker compose exec server npm run db:seed        # ÖNORM categories + items
+docker compose exec server npm run db:seed:admin  # initial admin user
 ```
 
 Open http://localhost:5173 and sign in with the admin you just seeded.
@@ -182,9 +183,9 @@ The repo ships with helper scripts that stand up an isolated Postgres and a loca
 
 ```bash
 # 1. Install deps
-npm install --workspaces=false   # root devDeps (Playwright, husky)
-cd server && npm install && cd ..
-cd client && npm install && cd ..
+npm ci --workspaces=false   # root devDeps (Playwright, husky)
+cd server && npm ci && cd ..
+cd client && npm ci && cd ..
 
 # 2. Start infra (Docker — isolated ports 5433 + 1026 + 8026)
 ./scripts/local-test-db.sh start    # postgres  → localhost:5433
@@ -235,12 +236,12 @@ Register a user at `/login` → check MailHog at **http://localhost:8026** → c
 cp .env.example .env.production
 # Fill in real values — see Configuration below
 
-docker-compose -f docker-compose.prod.yml --env-file .env.production up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 
 # One-off setup
-docker-compose -f docker-compose.prod.yml exec server npm run db:migrate:deploy
-docker-compose -f docker-compose.prod.yml exec server npm run db:seed
-docker-compose -f docker-compose.prod.yml exec server npm run db:seed:admin
+docker compose -f docker-compose.prod.yml exec server npm run db:migrate:deploy
+docker compose -f docker-compose.prod.yml exec server npm run db:seed
+docker compose -f docker-compose.prod.yml exec server npm run db:seed:admin
 ```
 
 ### Production checklist
@@ -298,6 +299,18 @@ All configuration is environment-driven. Copy `.env.example` to `.env` for the c
 | `OTEL_SERVICE_NAME` | Defaults to `onorm1300-server` |
 | `SENTRY_DSN` / `VITE_SENTRY_DSN` | Optional — install `@sentry/node` / `@sentry/react` to enable |
 
+### Legal pages
+
+The repository intentionally contains no operator address or personal contact details. Configure
+the imprint, privacy policy, terms, and footer for each deployment:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_LEGAL_NAME` | Legal name of the operator |
+| `VITE_LEGAL_ADDRESS` | Postal address; separate displayed lines with `|` |
+| `VITE_LEGAL_EMAIL` | Public legal and privacy contact address |
+| `VITE_LEGAL_PHONE` | Optional telephone number |
+
 ### Seed admin
 
 | Variable | Description |
@@ -328,11 +341,13 @@ All configuration is environment-driven. Copy `.env.example` to `.env` for the c
 ## Testing
 
 ```bash
-# Server tests (189 tests, real Postgres required)
+# Server tests (199 tests, real Postgres required)
+./scripts/local-test-db.sh start
 cd server
 eval $(../scripts/local-test-db.sh env)
 npx prisma migrate deploy
 npm test
+cd .. && ./scripts/local-test-db.sh stop
 
 # Client tests (36 tests, jsdom)
 cd client && npm test
@@ -365,9 +380,9 @@ See [e2e/README.md](e2e/README.md) for the Playwright run recipe.
 | Language | TypeScript (strict) | 5.9 |
 | ORM | Prisma | 5.10 |
 | Database | PostgreSQL | 16 |
-| Email | nodemailer | 8 |
+| Email | nodemailer | 9 |
 | PDF | PDFKit | 0.17 |
-| Images | Sharp | 0.34 |
+| Images | Sharp | 0.35 |
 | Auth | JWT + bcryptjs | — |
 | Validation | Zod | 4 |
 | Metrics | prom-client | 15 |
@@ -381,9 +396,9 @@ See [e2e/README.md](e2e/README.md) for the Playwright run recipe.
 
 - **Audit trail** — every mutation is logged with actor, timestamp, IP, request ID, and previous state
 - **DSGVO / GDPR** — privacy policy at `/datenschutz`; data export and deletion via admin UI
-- **Impressum** — `/impressum` as required by Austrian law (§ 5 ECG)
+- **Legal pages** — operator-configured imprint, privacy policy, and terms; the bundled text must be legally reviewed for each deployment
 - **PDF reports** — generated on demand from inspection data; regeneration is deterministic
-- **Retention** — inspection records retained indefinitely by default; configurable
+- **Retention** — completed inspection records are not deleted automatically; operators must define and implement their own retention policy
 
 ---
 
@@ -398,9 +413,3 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md). Do not open public is
 ## License
 
 Distributed under the [MIT License](LICENSE).
-
----
-
-<p align="center">
-  Copyright &copy; 2026 <a href="https://stoicera.com">Stoicera GesbR</a>
-</p>

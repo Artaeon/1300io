@@ -4,9 +4,10 @@
 
 If you discover a security vulnerability in 1300.io, please report it responsibly. Do not open a public GitHub issue for security vulnerabilities.
 
-**Contact:** security@stoicera.com
-
-Alternatively, you can email office@stoicera.com with the subject line "Security Vulnerability Report".
+Use [GitHub's private vulnerability reporting](https://github.com/Artaeon/1300io/security/advisories/new)
+when available, or email `security@stoicera.com` with the subject
+"1300.io security report". Do not include credentials, production data,
+or unrelated personal information in the report.
 
 ## What to Include
 
@@ -34,7 +35,7 @@ The following are in scope:
 The following are out of scope:
 - Denial of service attacks
 - Social engineering
-- Issues in third-party dependencies (report these to the respective maintainers)
+- Known third-party issues without a project-specific impact or reproducible exploit
 - Issues that require physical access to the server
 
 ## Supported Versions
