@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { legal } from '../config/legal';
 
 export default function Impressum() {
     return (
@@ -18,21 +19,21 @@ export default function Impressum() {
                         <section>
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Angaben gemäß § 5 ECG</h2>
                             <p>
-                                <strong>Stoicera GesbR</strong><br />
-                                Allerheiligen im Mühlkreis 7<br />
-                                4320 Perg<br />
-                                Österreich
+                                <strong>{legal.name}</strong><br />
+                                {legal.addressLines.map((line) => (
+                                    <React.Fragment key={line}>{line}<br /></React.Fragment>
+                                ))}
                             </p>
                         </section>
 
                         <section>
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Kontakt</h2>
                             <p>
-                                E-Mail: <a href="mailto:office@stoicera.com" className="link-underline text-blue-600 dark:text-blue-400">office@stoicera.com</a>
-                                {import.meta.env.VITE_IMPRESSUM_PHONE && (
+                                E-Mail: <a href={`mailto:${legal.email}`} className="link-underline text-blue-600 dark:text-blue-400">{legal.email}</a>
+                                {legal.phone && (
                                     <>
                                         <br />
-                                        Telefon: {import.meta.env.VITE_IMPRESSUM_PHONE}
+                                        Telefon: {legal.phone}
                                     </>
                                 )}
                             </p>

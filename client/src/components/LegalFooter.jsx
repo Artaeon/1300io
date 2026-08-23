@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { legal } from '../config/legal';
 
 export default function LegalFooter() {
     // Fetch server version once for support-ticket traceability.
@@ -36,7 +37,7 @@ export default function LegalFooter() {
                 </Link>
             </div>
             <p className="mt-2">
-                © {year} Stoicera GesbR
+                © {year} {legal.name}
                 {release && (
                     <>
                         {' · '}

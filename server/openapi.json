@@ -4,10 +4,6 @@
     "title": "1300.io API",
     "version": "1.0.0",
     "description": "Open-source SaaS for Austrian property safety inspections (ÖNORM B 1300). Bearer-token (JWT) authentication; refresh tokens rotate on use.",
-    "contact": {
-      "name": "Stoicera GesbR",
-      "email": "office@stoicera.com"
-    },
     "license": { "name": "MIT" }
   },
   "servers": [

@@ -25,4 +25,5 @@
 /client/src/components/Impressum.jsx        @Artaeon
 /client/src/components/Datenschutz.jsx      @Artaeon
 /client/src/components/AGB.jsx              @Artaeon
+/client/src/config/legal.js                 @Artaeon
 /SECURITY.md                                @Artaeon

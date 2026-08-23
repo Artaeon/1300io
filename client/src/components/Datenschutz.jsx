@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { legal } from '../config/legal';
 
 export default function Datenschutz() {
     return (
@@ -19,10 +20,11 @@ export default function Datenschutz() {
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">1. Verantwortlicher</h2>
                             <p>
                                 Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br /><br />
-                                <strong>Stoicera GesbR</strong><br />
-                                Allerheiligen im Mühlkreis 7<br />
-                                4320 Perg, Österreich<br />
-                                E-Mail: <a href="mailto:office@stoicera.com" className="link-underline text-blue-600 dark:text-blue-400">office@stoicera.com</a>
+                                <strong>{legal.name}</strong><br />
+                                {legal.addressLines.map((line) => (
+                                    <React.Fragment key={line}>{line}<br /></React.Fragment>
+                                ))}
+                                E-Mail: <a href={`mailto:${legal.email}`} className="link-underline text-blue-600 dark:text-blue-400">{legal.email}</a>
                             </p>
                         </section>
 
@@ -87,7 +89,7 @@ export default function Datenschutz() {
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">7. Kontakt</h2>
                             <p>
                                 Bei Fragen zum Datenschutz wenden Sie sich bitte an:<br />
-                                <a href="mailto:office@stoicera.com" className="link-underline text-blue-600 dark:text-blue-400">office@stoicera.com</a>
+                                <a href={`mailto:${legal.email}`} className="link-underline text-blue-600 dark:text-blue-400">{legal.email}</a>
                             </p>
                         </section>
 

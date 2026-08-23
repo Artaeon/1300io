@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { legal } from '../config/legal';
 
 export default function AGB() {
     return (
@@ -27,7 +28,7 @@ export default function AGB() {
                             <h2 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">1. Geltungsbereich</h2>
                             <p>
                                 Diese AGB regeln die Nutzung der Software 1300.io (nachfolgend „Dienst“)
-                                der Stoicera GesbR, Allerheiligen im Mühlkreis 7, 4320 Perg, Österreich
+                                von {legal.name}, {legal.addressLines.join(', ')}
                                 (nachfolgend „Anbieter“) durch registrierte Nutzer (nachfolgend „Kunde“).
                                 Abweichende Bedingungen des Kunden werden nicht anerkannt, sofern der
                                 Anbieter ihrer Geltung nicht ausdrücklich schriftlich zustimmt.
