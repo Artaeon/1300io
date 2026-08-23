@@ -1,0 +1,14 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented test-only credentials"
+regexTarget = "secret"
+regexes = [
+  '''Correct-Horse-Battery-42''',
+  '''Strong-Other-Pass-42''',
+  '''wrong-final-pass''',
+  '''wrong-password-12''',
+  '''Doesnt-Matter-42''',
+  '''test-secret-key-at-least-16-characters-long''',
+]
